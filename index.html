@@ -1,0 +1,2779 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<meta name="theme-color" content="#080c14"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="ARIA"/>
+<meta name="description" content="ARIA v7 — AI-powered call coaching for car accident compensation agents"/>
+<title>ARIA v7 — Call Coach</title>
+<link rel="manifest" href="./manifest.json"/>
+<link rel="icon" href="./icon.svg" type="image/svg+xml"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+/* ═══════════════════════════════════════════════
+   DESIGN TOKENS
+═══════════════════════════════════════════════ */
+:root {
+  --bg: #080c14;
+  --s1: #0d1220;
+  --s2: #111827;
+  --b1: rgba(255,255,255,0.055);
+  --b2: rgba(255,255,255,0.10);
+  --b3: rgba(255,255,255,0.18);
+  --t1: #f0f4ff;
+  --t2: rgba(220,230,255,0.65);
+  --t3: rgba(180,200,255,0.35);
+  --ac: #5b8dee;
+  --ac2: #7aa8f5;
+  --green: #3dd68c;
+  --red: #f06b6b;
+  --amber: #f5a623;
+  --purple: #b07aff;
+  --nav-h: 68px;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* ═══════════════════════════════════════════════
+   RESET & BASE
+═══════════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { height: 100%; scroll-behavior: smooth; }
+body {
+  font-family: 'DM Sans', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--t1);
+  min-height: 100%;
+  overflow-x: hidden;
+  position: relative;
+}
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 0;
+  background:
+    radial-gradient(ellipse 80% 50% at 20% 10%, rgba(91,141,238,0.12) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 80% 80%, rgba(176,122,255,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 60% at 50% 50%, rgba(61,214,140,0.04) 0%, transparent 70%);
+  pointer-events: none;
+}
+body::after {
+  content: '';
+  position: fixed; inset: 0; z-index: 0;
+  background-image: radial-gradient(rgba(255,255,255,0.03) 1px, transparent 1px);
+  background-size: 28px 28px;
+  pointer-events: none;
+}
+
+/* ═══════════════════════════════════════════════
+   TYPOGRAPHY
+═══════════════════════════════════════════════ */
+h1,h2,h3,h4,h5 { font-weight: 700; line-height: 1.2; }
+.mono { font-family: 'DM Mono', monospace; }
+.text-xs { font-size: 0.72rem; }
+.text-sm { font-size: 0.83rem; }
+.text-base { font-size: 0.95rem; }
+.text-lg { font-size: 1.1rem; }
+.text-xl { font-size: 1.3rem; }
+.text-2xl { font-size: 1.6rem; }
+.text-3xl { font-size: 2rem; }
+.text-muted { color: var(--t2); }
+.text-dim { color: var(--t3); }
+.fw-5 { font-weight: 500; }
+.fw-6 { font-weight: 600; }
+.fw-7 { font-weight: 700; }
+
+/* ═══════════════════════════════════════════════
+   LAYOUT
+═══════════════════════════════════════════════ */
+#app { position: relative; z-index: 1; }
+.page {
+  display: none;
+  flex-direction: column;
+  min-height: 100dvh;
+  padding-bottom: calc(var(--nav-h) + var(--safe-bottom) + 12px);
+}
+.page.active { display: flex; }
+.container { padding: 0 14px; width: 100%; max-width: 600px; margin: 0 auto; }
+
+/* ═══════════════════════════════════════════════
+   GLASS CARDS
+═══════════════════════════════════════════════ */
+.card {
+  background: var(--b1);
+  border: 1px solid var(--b2);
+  border-radius: 16px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  padding: 16px;
+  margin-bottom: 12px;
+}
+.card-sm { padding: 12px 14px; border-radius: 12px; }
+.card-purple {
+  background: rgba(176,122,255,0.07);
+  border-color: rgba(176,122,255,0.22);
+}
+.card-green {
+  background: rgba(61,214,140,0.06);
+  border-color: rgba(61,214,140,0.22);
+}
+.card-blue {
+  background: rgba(91,141,238,0.07);
+  border-color: rgba(91,141,238,0.22);
+}
+.card-amber {
+  background: rgba(245,166,35,0.07);
+  border-color: rgba(245,166,35,0.22);
+}
+.card-red {
+  background: rgba(240,107,107,0.07);
+  border-color: rgba(240,107,107,0.22);
+}
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.card-title {
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--t3);
+}
+
+/* ═══════════════════════════════════════════════
+   TOPBAR
+═══════════════════════════════════════════════ */
+.topbar {
+  position: sticky; top: 0; z-index: 50;
+  background: rgba(8,12,20,0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--b2);
+  padding: 10px 14px;
+  padding-top: max(10px, env(safe-area-inset-top));
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.topbar-left { display: flex; align-items: center; gap: 10px; flex: 1; }
+.topbar-right { display: flex; align-items: center; gap: 8px; }
+
+/* Orb */
+.orb-wrap { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.orb {
+  width: 38px; height: 38px; border-radius: 50%;
+  background: conic-gradient(from 0deg, #5b8dee, #b07aff, #3dd68c, #5b8dee);
+  position: relative;
+  flex-shrink: 0;
+}
+.orb::before {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #7aa8f5 0%, #5b8dee 60%, #3a6fd8 100%);
+}
+.orb.idle { animation: none; }
+.orb.idle::before { background: radial-gradient(circle, #7aa8f5 0%, #5b8dee 60%, #3a6fd8 100%); }
+.orb.thinking { animation: orbSpin 1.2s linear infinite; }
+.orb.speaking { animation: orbPulse 0.8s ease-in-out infinite; }
+.orb.listening {
+  box-shadow: 0 0 0 4px rgba(61,214,140,0.2), 0 0 16px rgba(61,214,140,0.3);
+  animation: listenPulse 1s ease-in-out infinite;
+}
+.orb.listening::before { background: radial-gradient(circle, #3dd68c 0%, #2ab573 100%); }
+
+.orb-status {
+  font-size: 0.6rem;
+  font-weight: 600;
+  color: var(--t3);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+
+@keyframes orbSpin { to { transform: rotate(360deg); } }
+@keyframes orbPulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(91,141,238,0.4); transform: scale(1); }
+  50% { box-shadow: 0 0 0 8px rgba(91,141,238,0); transform: scale(1.05); }
+}
+@keyframes listenPulse {
+  0%,100% { box-shadow: 0 0 0 4px rgba(61,214,140,0.2), 0 0 16px rgba(61,214,140,0.3); }
+  50% { box-shadow: 0 0 0 8px rgba(61,214,140,0.1), 0 0 24px rgba(61,214,140,0.5); }
+}
+
+.app-title { font-size: 1.1rem; font-weight: 800; letter-spacing: -0.02em; }
+.app-title span { color: var(--ac2); }
+.app-sub { font-size: 0.68rem; color: var(--t3); font-weight: 500; }
+
+/* API Pill */
+.api-pill {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.65rem;
+  font-weight: 500;
+  padding: 3px 8px;
+  border-radius: 20px;
+  border: 1px solid;
+  white-space: nowrap;
+  transition: all 0.3s;
+}
+.api-pill.groq { color: var(--green); border-color: rgba(61,214,140,0.4); background: rgba(61,214,140,0.1); }
+.api-pill.openrouter { color: var(--ac2); border-color: rgba(122,168,245,0.4); background: rgba(122,168,245,0.1); }
+.api-pill.cloudflare { color: var(--amber); border-color: rgba(245,166,35,0.4); background: rgba(245,166,35,0.1); }
+.api-pill.nokey { color: var(--red); border-color: rgba(240,107,107,0.4); background: rgba(240,107,107,0.1); }
+
+.icon-btn {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: var(--b1);
+  border: 1px solid var(--b2);
+  color: var(--t2);
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+.icon-btn:hover, .icon-btn:active { background: var(--b2); color: var(--t1); }
+
+/* ═══════════════════════════════════════════════
+   BOTTOM NAV
+═══════════════════════════════════════════════ */
+.bottom-nav {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  z-index: 50;
+  background: rgba(8,12,20,0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid var(--b2);
+  display: flex;
+  height: calc(var(--nav-h) + var(--safe-bottom));
+  padding-bottom: var(--safe-bottom);
+}
+.nav-tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  cursor: pointer;
+  color: var(--t3);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  transition: all 0.2s;
+  border: none;
+  background: none;
+  padding: 8px 4px;
+  position: relative;
+}
+.nav-tab .nav-icon { font-size: 1.4rem; transition: transform 0.2s; }
+.nav-tab.active { color: var(--ac2); }
+.nav-tab.active .nav-icon { transform: scale(1.15); }
+.nav-tab.active::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 30%; right: 30%;
+  height: 2px;
+  background: var(--ac2);
+  border-radius: 0 0 2px 2px;
+}
+
+/* ═══════════════════════════════════════════════
+   SPLASH SCREEN
+═══════════════════════════════════════════════ */
+#splash {
+  position: fixed; inset: 0; z-index: 200;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  padding: 40px 24px;
+  text-align: center;
+}
+#splash.hidden { display: none; }
+.splash-orb-ring {
+  position: relative;
+  width: 120px; height: 120px;
+}
+.splash-orb-ring::before {
+  content: '';
+  position: absolute; inset: 0;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  background: conic-gradient(from 0deg, #5b8dee, #b07aff, #3dd68c, #5b8dee) border-box;
+  -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: destination-out;
+  mask-composite: exclude;
+  animation: orbSpin 3s linear infinite;
+}
+.splash-orb-ring::after {
+  content: '';
+  position: absolute; inset: 8px;
+  border-radius: 50%;
+  border: 1px solid rgba(91,141,238,0.3);
+  animation: orbSpin 6s linear infinite reverse;
+}
+.splash-inner-orb {
+  position: absolute; inset: 16px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #7aa8f5, #5b8dee 60%, #3a6fd8);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2rem; font-weight: 800; color: #fff;
+  box-shadow: 0 0 40px rgba(91,141,238,0.5);
+}
+.splash-title { font-size: 2.8rem; font-weight: 800; letter-spacing: -0.04em; }
+.splash-title span { color: var(--ac2); }
+.splash-sub { font-size: 1rem; color: var(--t2); max-width: 280px; line-height: 1.5; }
+.splash-version { font-family: 'DM Mono', monospace; font-size: 0.7rem; color: var(--t3); }
+.btn-primary {
+  background: linear-gradient(135deg, var(--ac), var(--ac2));
+  color: #fff;
+  border: none;
+  border-radius: 14px;
+  padding: 16px 40px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(91,141,238,0.4);
+  transition: all 0.2s;
+  letter-spacing: 0.02em;
+}
+.btn-primary:hover, .btn-primary:active { transform: translateY(-1px); box-shadow: 0 6px 28px rgba(91,141,238,0.5); }
+
+/* ═══════════════════════════════════════════════
+   BUTTONS
+═══════════════════════════════════════════════ */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 10px 18px;
+  border-radius: 10px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid var(--b3);
+  background: var(--b1);
+  color: var(--t1);
+  transition: all 0.18s;
+  white-space: nowrap;
+}
+.btn:hover, .btn:active { background: var(--b2); transform: translateY(-1px); }
+.btn-green { background: rgba(61,214,140,0.12); border-color: rgba(61,214,140,0.35); color: var(--green); }
+.btn-green:hover { background: rgba(61,214,140,0.2); }
+.btn-red { background: rgba(240,107,107,0.12); border-color: rgba(240,107,107,0.35); color: var(--red); }
+.btn-red:hover { background: rgba(240,107,107,0.2); }
+.btn-amber { background: rgba(245,166,35,0.12); border-color: rgba(245,166,35,0.35); color: var(--amber); }
+.btn-amber:hover { background: rgba(245,166,35,0.2); }
+.btn-blue { background: rgba(91,141,238,0.15); border-color: rgba(91,141,238,0.35); color: var(--ac2); }
+.btn-blue:hover { background: rgba(91,141,238,0.25); }
+.btn-purple { background: rgba(176,122,255,0.12); border-color: rgba(176,122,255,0.35); color: var(--purple); }
+.btn-purple:hover { background: rgba(176,122,255,0.2); }
+.btn-full { width: 100%; }
+.btn-sm { padding: 7px 13px; font-size: 0.8rem; border-radius: 8px; }
+.btn-lg { padding: 14px 24px; font-size: 1rem; border-radius: 12px; }
+.btn-done {
+  background: rgba(61,214,140,0.15);
+  border: 1px solid rgba(61,214,140,0.4);
+  color: var(--green);
+  padding: 7px 14px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+  font-family: 'DM Sans', sans-serif;
+}
+.btn-done:hover { background: rgba(61,214,140,0.25); transform: scale(1.03); }
+
+/* ═══════════════════════════════════════════════
+   TOAST NOTIFICATIONS
+═══════════════════════════════════════════════ */
+#toast-area {
+  position: fixed;
+  top: 80px; left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  pointer-events: none;
+  width: min(90vw, 360px);
+}
+.toast {
+  padding: 11px 18px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-align: center;
+  animation: toastIn 0.3s ease, toastOut 0.4s ease 3.1s forwards;
+  pointer-events: none;
+  backdrop-filter: blur(12px);
+}
+.toast-info { background: rgba(91,141,238,0.25); border: 1px solid rgba(91,141,238,0.4); color: var(--ac2); }
+.toast-success { background: rgba(61,214,140,0.2); border: 1px solid rgba(61,214,140,0.4); color: var(--green); }
+.toast-warn { background: rgba(245,166,35,0.2); border: 1px solid rgba(245,166,35,0.4); color: var(--amber); }
+.toast-error { background: rgba(240,107,107,0.2); border: 1px solid rgba(240,107,107,0.4); color: var(--red); }
+@keyframes toastIn { from { opacity:0; transform:translateY(-12px) scale(0.95); } to { opacity:1; transform:translateY(0) scale(1); } }
+@keyframes toastOut { to { opacity:0; transform:translateY(-8px); } }
+
+/* ═══════════════════════════════════════════════
+   PAGE 1 — LIVE CALL
+═══════════════════════════════════════════════ */
+#page-call { padding-top: 0; }
+.section-gap { height: 8px; }
+
+/* Pre-call checklist */
+.checklist-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--b2);
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.checklist-item:last-child { border-bottom: none; }
+.check-box {
+  width: 22px; height: 22px;
+  border-radius: 6px;
+  border: 2px solid var(--b3);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.75rem;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+.checklist-item.done .check-box { background: var(--green); border-color: var(--green); }
+.checklist-item.done { opacity: 0.55; }
+.check-text { font-size: 0.88rem; color: var(--t2); }
+
+/* Client level selector */
+.level-tabs { display: flex; gap: 6px; margin-bottom: 12px; }
+.level-tab {
+  flex: 1; padding: 8px 4px;
+  border-radius: 10px;
+  border: 1px solid var(--b2);
+  background: var(--b1);
+  color: var(--t3);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.2s;
+}
+.level-tab.active { background: rgba(91,141,238,0.15); border-color: rgba(91,141,238,0.4); color: var(--ac2); }
+.level-tab.locked { opacity: 0.4; cursor: not-allowed; }
+
+.client-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+.client-card {
+  padding: 11px 12px;
+  border-radius: 11px;
+  border: 1px solid var(--b2);
+  background: var(--b1);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.client-card:hover:not(.locked), .client-card.selected { border-color: var(--ac); background: rgba(91,141,238,0.12); }
+.client-card.locked { opacity: 0.35; cursor: not-allowed; }
+.client-card-name { font-size: 0.82rem; font-weight: 700; margin-bottom: 2px; }
+.client-card-desc { font-size: 0.72rem; color: var(--t3); line-height: 1.3; }
+.client-badge {
+  display: inline-block;
+  font-size: 0.6rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 6px;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.badge-l1 { background: rgba(61,214,140,0.15); color: var(--green); }
+.badge-l2 { background: rgba(245,166,35,0.15); color: var(--amber); }
+.badge-l3 { background: rgba(240,107,107,0.15); color: var(--red); }
+
+/* Start button */
+#start-mock-btn {
+  background: linear-gradient(135deg, var(--ac), var(--purple));
+  color: #fff;
+  border: none;
+  border-radius: 14px;
+  padding: 16px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  cursor: pointer;
+  width: 100%;
+  box-shadow: 0 4px 20px rgba(91,141,238,0.35);
+  transition: all 0.2s;
+  letter-spacing: 0.01em;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+#start-mock-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 28px rgba(91,141,238,0.5); }
+#start-mock-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+/* Status bar */
+#status-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 8px; flex-wrap: wrap;
+  padding: 10px 14px;
+  background: rgba(8,12,20,0.8);
+  border-bottom: 1px solid var(--b2);
+  backdrop-filter: blur(10px);
+  position: sticky; top: 64px; z-index: 40;
+}
+.status-chip {
+  font-size: 0.72rem; font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1px solid;
+  display: inline-flex; align-items: center; gap: 5px;
+}
+.chip-active { color: var(--green); border-color: rgba(61,214,140,0.4); background: rgba(61,214,140,0.1); }
+.chip-done { color: var(--t3); border-color: var(--b2); background: transparent; }
+.chip-offscript { color: var(--amber); border-color: rgba(245,166,35,0.4); background: rgba(245,166,35,0.1); }
+
+.step-name-tag {
+  font-size: 0.78rem; font-weight: 600;
+  color: var(--ac2);
+  background: rgba(91,141,238,0.1);
+  border: 1px solid rgba(91,141,238,0.25);
+  border-radius: 8px;
+  padding: 4px 10px;
+}
+
+#end-call-btn {
+  background: rgba(240,107,107,0.15);
+  border: 1px solid rgba(240,107,107,0.3);
+  color: var(--red);
+  border-radius: 8px;
+  padding: 5px 12px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: all 0.2s;
+}
+#end-call-btn:hover { background: rgba(240,107,107,0.25); }
+
+/* Confidence meter */
+.conf-score-row { display: flex; align-items: baseline; gap: 6px; margin-bottom: 10px; }
+.conf-score-num {
+  font-size: 3.2rem;
+  font-weight: 800;
+  line-height: 1;
+  transition: color 0.4s;
+}
+.conf-score-denom { font-size: 1.2rem; color: var(--t3); font-weight: 500; }
+.conf-change {
+  font-size: 0.9rem;
+  font-weight: 700;
+  animation: confPop 0.5s ease;
+}
+@keyframes confPop {
+  0% { transform: scale(1.8) translateY(-4px); opacity: 0; }
+  60% { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(1); }
+}
+
+.conf-bar-bg {
+  height: 8px;
+  background: var(--b2);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+.conf-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.5s ease, background 0.4s;
+}
+.conf-verdict { font-size: 0.88rem; font-weight: 700; }
+.conf-tip { font-size: 0.78rem; color: var(--t2); margin-top: 4px; }
+
+/* Bridge Suggester */
+.bridge-box { border-radius: 14px; overflow: hidden; margin-bottom: 12px; }
+.bridge-none { color: var(--green); font-size: 0.85rem; font-weight: 600; padding: 12px 0; }
+.bridge-top { padding: 12px 14px; background: rgba(61,214,140,0.08); border: 1px solid rgba(61,214,140,0.25); border-radius: 14px 14px 0 0; }
+.bridge-bottom { padding: 12px 14px; background: rgba(91,141,238,0.08); border: 1px solid rgba(91,141,238,0.25); border-top: none; border-radius: 0 0 14px 14px; }
+.bridge-label { font-size: 0.67rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 5px; }
+.bridge-text { font-size: 0.88rem; line-height: 1.5; font-style: italic; }
+
+/* Script Step Tracker */
+.step-item {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  transition: all 0.3s;
+}
+.step-item:last-child { border-bottom: none; }
+.step-dot {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  margin-top: 1px;
+  border: 2px solid var(--b3);
+  color: var(--t3);
+  background: var(--b1);
+  transition: all 0.3s;
+}
+.step-item.done .step-dot { background: rgba(61,214,140,0.15); border-color: var(--green); color: var(--green); }
+.step-item.active .step-dot { background: rgba(91,141,238,0.2); border-color: var(--ac2); color: var(--ac2); box-shadow: 0 0 12px rgba(91,141,238,0.3); }
+.step-item.skipped { opacity: 0.3; }
+.step-content { flex: 1; }
+.step-title { font-size: 0.85rem; font-weight: 700; margin-bottom: 3px; }
+.step-item.active .step-title { color: var(--ac2); }
+.step-item.done .step-title { color: var(--green); }
+.step-script { font-size: 0.8rem; color: var(--t2); line-height: 1.5; font-style: italic; }
+.step-item.active { background: rgba(91,141,238,0.04); margin: 0 -14px; padding: 12px 14px; border-radius: 10px; }
+.step-actions { display: flex; gap: 6px; align-items: center; margin-top: 8px; flex-wrap: wrap; }
+
+.skip-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--amber);
+  background: rgba(245,166,35,0.1);
+  border: 1px solid rgba(245,166,35,0.3);
+  border-radius: 6px;
+  padding: 2px 8px;
+}
+
+/* AI Suggestion Box */
+#ai-suggestions { margin-bottom: 12px; }
+.ai-loading { text-align: center; padding: 20px; color: var(--t3); font-size: 0.85rem; }
+.ai-loading::after { content: ''; animation: dotDot 1.2s infinite; }
+@keyframes dotDot { 0%{content:'.'} 33%{content:'..'} 66%{content:'...'} 100%{content:'.'} }
+
+.offscript-warn {
+  padding: 10px 12px;
+  background: rgba(245,166,35,0.1);
+  border: 1px solid rgba(245,166,35,0.3);
+  border-radius: 10px;
+  font-size: 0.8rem;
+  color: var(--amber);
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.ai-current-step {
+  padding: 10px 12px;
+  background: rgba(91,141,238,0.07);
+  border: 1px solid rgba(91,141,238,0.2);
+  border-radius: 10px;
+  margin-bottom: 10px;
+}
+.ai-step-label { font-size: 0.67rem; color: var(--t3); font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 3px; }
+.ai-step-line { font-size: 0.83rem; color: var(--t1); font-style: italic; line-height: 1.45; }
+
+.ai-opt-card {
+  padding: 12px 14px;
+  border-radius: 11px;
+  border: 1px solid var(--b2);
+  background: var(--b1);
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.ai-opt-card:hover { border-color: var(--ac); background: rgba(91,141,238,0.07); }
+.ai-opt-label { font-size: 0.67rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ac2); margin-bottom: 5px; }
+.ai-opt-text { font-size: 0.88rem; line-height: 1.5; color: var(--t1); margin-bottom: 6px; }
+.ai-tip { font-size: 0.76rem; color: var(--purple); font-style: italic; }
+
+/* Client Info Form */
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.form-field label {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--t3);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 5px;
+}
+.form-field input, .form-field select {
+  width: 100%;
+  padding: 9px 12px;
+  background: var(--s2);
+  border: 1px solid var(--b3);
+  border-radius: 8px;
+  color: var(--t1);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.88rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.form-field input:focus { border-color: var(--ac); }
+.form-field input.filled { border-color: var(--green); }
+.form-field select { cursor: pointer; }
+.form-field select option { background: var(--s1); }
+.form-actions { display: flex; gap: 8px; margin-top: 12px; }
+
+/* Call Feed */
+#call-feed {
+  max-height: 260px;
+  overflow-y: auto;
+  padding: 2px 0;
+  scrollbar-width: thin;
+  scrollbar-color: var(--b3) transparent;
+}
+.feed-line {
+  padding: 8px 10px;
+  border-radius: 10px;
+  margin-bottom: 6px;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  animation: feedFade 0.35s ease;
+}
+@keyframes feedFade { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+.feed-line.agent { background: rgba(91,141,238,0.08); border-left: 3px solid var(--ac); }
+.feed-line.client { background: rgba(255,255,255,0.04); border-left: 3px solid var(--t3); }
+.feed-line.aria { background: rgba(176,122,255,0.06); border-left: 3px solid var(--purple); font-style: italic; }
+.feed-line.system { background: rgba(245,166,35,0.06); border-left: 3px solid var(--amber); font-style: italic; }
+.feed-speaker { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 2px; }
+.feed-line.agent .feed-speaker { color: var(--ac2); }
+.feed-line.client .feed-speaker { color: var(--t3); }
+.feed-line.aria .feed-speaker { color: var(--purple); }
+.feed-line.system .feed-speaker { color: var(--amber); }
+
+/* Input row */
+#input-row {
+  display: flex; gap: 8px; align-items: center;
+  padding: 10px 0 0;
+  border-top: 1px solid var(--b2);
+  margin-top: 4px;
+}
+#agent-input {
+  flex: 1;
+  padding: 10px 14px;
+  background: var(--s2);
+  border: 1px solid var(--b3);
+  border-radius: 12px;
+  color: var(--t1);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+#agent-input:focus { border-color: var(--ac); }
+#agent-input::placeholder { color: var(--t3); }
+#send-btn {
+  width: 42px; height: 42px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--ac), var(--ac2));
+  border: none;
+  color: #fff;
+  font-size: 1.1rem;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+#send-btn:hover { transform: scale(1.05); }
+#mic-btn {
+  width: 42px; height: 42px;
+  border-radius: 12px;
+  background: var(--b1);
+  border: 1px solid var(--b2);
+  color: var(--t2);
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+#mic-btn.active { background: rgba(61,214,140,0.15); border-color: var(--green); color: var(--green); }
+
+/* Post-call Report */
+#report-section { animation: feedFade 0.4s ease; }
+.report-score-row { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
+.report-score-big {
+  width: 80px; height: 80px;
+  border-radius: 50%;
+  border: 3px solid;
+  display: flex;flex-direction:column;align-items:center;justify-content:center;
+  flex-shrink: 0;
+}
+.report-score-num { font-size: 1.8rem; font-weight: 800; line-height: 1; }
+.report-score-label { font-size: 0.62rem; color: var(--t3); font-weight: 600; }
+.stars { font-size: 1.4rem; letter-spacing: 2px; }
+.report-section-title { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--t3); margin-bottom: 6px; }
+.report-item { display: flex; align-items: flex-start; gap: 7px; margin-bottom: 5px; font-size: 0.85rem; color: var(--t2); line-height: 1.45; }
+.report-item::before { content: '•'; color: var(--ac2); flex-shrink: 0; margin-top: 1px; }
+
+/* ═══════════════════════════════════════════════
+   PAGE 2 — AI NEWS
+═══════════════════════════════════════════════ */
+.news-card { cursor: pointer; transition: all 0.2s; }
+.news-card:hover { border-color: var(--ac); transform: translateY(-1px); }
+.news-headline { font-size: 0.95rem; font-weight: 700; margin-bottom: 8px; line-height: 1.4; }
+.news-summary { font-size: 0.83rem; color: var(--t2); line-height: 1.55; margin-bottom: 10px; }
+.news-explainer {
+  padding: 8px 11px;
+  background: rgba(176,122,255,0.07);
+  border-radius: 8px;
+  border: 1px solid rgba(176,122,255,0.2);
+  margin-bottom: 8px;
+}
+.news-explainer-label { font-size: 0.67rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--purple); margin-bottom: 3px; }
+.news-explainer-text { font-size: 0.8rem; color: var(--t2); line-height: 1.5; }
+.news-why {
+  padding: 8px 11px;
+  background: rgba(61,214,140,0.06);
+  border-radius: 8px;
+  border: 1px solid rgba(61,214,140,0.2);
+}
+.news-why-label { font-size: 0.67rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--green); margin-bottom: 3px; }
+.news-why-text { font-size: 0.8rem; color: var(--t2); line-height: 1.5; }
+.news-source { font-size: 0.7rem; color: var(--t3); margin-top: 8px; font-family: 'DM Mono', monospace; }
+.news-loading { text-align: center; padding: 40px 20px; }
+.news-spinner {
+  width: 40px; height: 40px;
+  border: 3px solid var(--b2);
+  border-top-color: var(--ac);
+  border-radius: 50%;
+  animation: orbSpin 0.8s linear infinite;
+  margin: 0 auto 16px;
+}
+.news-title-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.news-refresh-btn {
+  padding: 7px 14px;
+  border-radius: 9px;
+  border: 1px solid var(--b2);
+  background: var(--b1);
+  color: var(--ac2);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'DM Sans', sans-serif;
+  transition: all 0.2s;
+}
+.news-refresh-btn:hover { background: var(--b2); }
+
+/* ═══════════════════════════════════════════════
+   PAGE 3 — STATS
+═══════════════════════════════════════════════ */
+.stat-big { font-size: 3rem; font-weight: 800; line-height: 1; }
+.stat-label { font-size: 0.8rem; color: var(--t2); margin-top: 3px; }
+.patch-bar-bg {
+  height: 10px;
+  background: var(--b2);
+  border-radius: 5px;
+  overflow: hidden;
+  margin: 10px 0 6px;
+}
+.patch-bar-fill {
+  height: 100%;
+  border-radius: 5px;
+  transition: width 0.6s ease, background 0.4s;
+}
+.stats-row { display: flex; gap: 10px; }
+.stats-row .card { flex: 1; text-align: center; margin-bottom: 0; }
+.today-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
+.today-cell {
+  background: var(--b1);
+  border: 1px solid var(--b2);
+  border-radius: 12px;
+  padding: 12px 8px;
+  text-align: center;
+}
+.today-num { font-size: 1.8rem; font-weight: 800; color: var(--ac2); }
+.today-lbl { font-size: 0.7rem; color: var(--t3); font-weight: 600; }
+.alltime-row { display: flex; gap: 8px; }
+.alltime-cell {
+  flex: 1;
+  background: var(--b1);
+  border: 1px solid var(--b2);
+  border-radius: 11px;
+  padding: 12px 10px;
+  text-align: center;
+}
+.alltime-num { font-size: 1.5rem; font-weight: 800; }
+.alltime-lbl { font-size: 0.68rem; color: var(--t3); font-weight: 600; }
+
+.progress-bar-bg {
+  height: 6px;
+  background: var(--b2);
+  border-radius: 3px;
+  overflow: hidden;
+  margin: 8px 0 4px;
+}
+.progress-bar-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--ac), var(--purple)); transition: width 0.6s; }
+
+.streak-num { font-size: 2.5rem; font-weight: 800; color: var(--amber); }
+.streak-fire { font-size: 1.5rem; }
+
+.log-btns { display: flex; gap: 8px; margin-bottom: 12px; }
+.log-btns .btn { flex: 1; }
+
+/* ═══════════════════════════════════════════════
+   SETTINGS MODAL
+═══════════════════════════════════════════════ */
+#settings-overlay {
+  position: fixed; inset: 0; z-index: 100;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(6px);
+  display: none;
+  align-items: flex-end;
+  justify-content: center;
+}
+#settings-overlay.open { display: flex; }
+#settings-modal {
+  width: min(100vw, 600px);
+  max-height: 92vh;
+  background: var(--s1);
+  border-radius: 24px 24px 0 0;
+  border: 1px solid var(--b2);
+  border-bottom: none;
+  overflow-y: auto;
+  padding: 8px 0 calc(32px + var(--safe-bottom));
+  animation: sheetUp 0.32s ease;
+}
+@keyframes sheetUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.modal-drag { width: 40px; height: 4px; background: var(--b3); border-radius: 2px; margin: 12px auto 16px; }
+.modal-title { font-size: 1.1rem; font-weight: 800; padding: 0 20px 12px; border-bottom: 1px solid var(--b2); }
+.settings-section {
+  padding: 16px 20px 0;
+  border-bottom: 1px solid var(--b2);
+  margin-bottom: 0;
+}
+.settings-section:last-of-type { border-bottom: none; }
+.settings-section-title {
+  font-size: 0.82rem; font-weight: 700;
+  color: var(--t3); text-transform: uppercase;
+  letter-spacing: 0.07em;
+  margin-bottom: 10px;
+}
+.settings-field { margin-bottom: 12px; }
+.settings-field label {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--t2);
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+.settings-field input {
+  width: 100%;
+  padding: 10px 13px;
+  background: var(--s2);
+  border: 1px solid var(--b3);
+  border-radius: 9px;
+  color: var(--t1);
+  font-family: 'DM Mono', monospace;
+  font-size: 0.83rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.settings-field input:focus { border-color: var(--ac); }
+.settings-hint {
+  font-size: 0.72rem;
+  color: var(--t3);
+  margin-top: 5px;
+  line-height: 1.4;
+}
+.settings-notice {
+  margin: 16px 20px 0;
+  padding: 10px 13px;
+  background: rgba(61,214,140,0.06);
+  border: 1px solid rgba(61,214,140,0.2);
+  border-radius: 10px;
+  font-size: 0.78rem;
+  color: var(--t2);
+  line-height: 1.5;
+}
+.settings-save-wrap { padding: 16px 20px 0; }
+
+/* ═══════════════════════════════════════════════
+   UTILITY
+═══════════════════════════════════════════════ */
+.flex { display: flex; }
+.flex-col { flex-direction: column; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.gap-2 { gap: 8px; }
+.gap-3 { gap: 12px; }
+.w-full { width: 100%; }
+.mb-1 { margin-bottom: 4px; }
+.mb-2 { margin-bottom: 8px; }
+.mb-3 { margin-bottom: 12px; }
+.hidden { display: none !important; }
+.divider { height: 1px; background: var(--b2); margin: 12px 0; }
+.page-top { padding-top: 8px; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--b3); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════
+     SPLASH SCREEN
+══════════════════════════════════════ -->
+<div id="splash">
+  <div class="splash-orb-ring">
+    <div class="splash-inner-orb">A</div>
+  </div>
+  <div>
+    <div class="splash-title"><span>ARIA</span> v7</div>
+    <div class="splash-version mono">Call Coaching Intelligence</div>
+  </div>
+  <div class="splash-sub">Your AI coach for car accident compensation calls. Practice, improve, and win every call.</div>
+  <button class="btn-primary" id="splash-start-btn">🚀 Start Training</button>
+</div>
+
+<!-- ══════════════════════════════════════
+     TOAST AREA
+══════════════════════════════════════ -->
+<div id="toast-area"></div>
+
+<!-- ══════════════════════════════════════
+     MAIN APP
+══════════════════════════════════════ -->
+<div id="app">
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="orb-wrap">
+        <div class="orb idle" id="main-orb"></div>
+        <span class="orb-status" id="orb-status">Ready</span>
+      </div>
+      <div>
+        <div class="app-title"><span>ARIA</span> v7</div>
+        <div class="app-sub">Mark's Call Coach</div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <span class="api-pill nokey" id="api-pill">No Key</span>
+      <button class="icon-btn" id="settings-btn" title="Settings">⚙️</button>
+    </div>
+  </div>
+
+  <!-- ════════════════════ PAGE 1: LIVE CALL ════════════════════ -->
+  <div class="page active" id="page-call">
+
+    <!-- PRE-CALL VIEW -->
+    <div id="precall-view">
+      <div class="container page-top">
+
+        <!-- Pre-call checklist -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">⚡ Pre-Call Checklist</span>
+            <span id="check-count" class="text-sm text-muted">0/5</span>
+          </div>
+          <div id="checklist"></div>
+        </div>
+
+        <!-- Client type selector -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">🎭 Choose Client Type</span>
+          </div>
+          <div class="level-tabs">
+            <button class="level-tab active" data-level="1" id="ltab-1">🟢 Level 1</button>
+            <button class="level-tab" data-level="2" id="ltab-2">🟡 Level 2</button>
+            <button class="level-tab" data-level="3" id="ltab-3">🔴 Level 3</button>
+          </div>
+          <div class="client-grid" id="client-grid"></div>
+          <div class="divider"></div>
+          <div class="text-sm text-dim" id="unlock-note">✅ Level 1 unlocked from start</div>
+        </div>
+
+        <!-- Start button -->
+        <button id="start-mock-btn" disabled>📞 Start Mock Call</button>
+        <div class="section-gap"></div>
+
+      </div>
+    </div>
+
+    <!-- ACTIVE CALL VIEW -->
+    <div id="active-call-view" class="hidden">
+
+      <!-- Status bar -->
+      <div id="status-bar">
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+          <span class="status-chip chip-active" id="call-status-chip">● Live</span>
+          <span class="step-name-tag" id="current-step-tag">Step 1</span>
+          <span class="status-chip chip-offscript hidden" id="offscript-badge">⚠ Off-Script</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="mono text-sm text-dim" id="call-timer">0:00</span>
+          <button id="end-call-btn">End Call ✕</button>
+        </div>
+      </div>
+
+      <div class="container" style="padding-top:12px;">
+
+        <!-- Confidence Meter -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">💪 Confidence</span>
+            <span id="conf-verdict" class="conf-verdict">Okay ⚡</span>
+          </div>
+          <div class="conf-score-row">
+            <span class="conf-score-num" id="conf-num">5</span>
+            <span class="conf-score-denom">/10</span>
+            <span class="conf-change hidden" id="conf-change">+1</span>
+          </div>
+          <div class="conf-bar-bg"><div class="conf-bar-fill" id="conf-bar" style="width:50%"></div></div>
+          <div class="conf-tip" id="conf-tip">Stay confident and follow the script!</div>
+        </div>
+
+        <!-- Bridge Suggester -->
+        <div class="card card-green">
+          <div class="card-header">
+            <span class="card-title">🌉 Bridge — Answer + Get Back on Script</span>
+          </div>
+          <div id="bridge-content">
+            <div class="bridge-none">No trap detected — follow the script guide below. ✅</div>
+          </div>
+        </div>
+
+        <!-- AI Suggestion Box -->
+        <div class="card" id="ai-suggestions">
+          <div class="card-header">
+            <span class="card-title">🤖 ARIA Suggestions</span>
+          </div>
+          <div id="ai-content">
+            <div class="ai-current-step">
+              <div class="ai-step-label">Current Step</div>
+              <div class="ai-step-line" id="ai-step-line">Select a client and start a call to see suggestions.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step Tracker -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">📋 Script Steps</span>
+          </div>
+          <div id="step-tracker"></div>
+        </div>
+
+        <!-- Client Info Form -->
+        <div class="card card-purple">
+          <div class="card-header">
+            <span class="card-title">📝 Client Info (Fill Manually)</span>
+          </div>
+          <div class="form-grid">
+            <div class="form-field"><label>First Name</label><input type="text" id="f-fname" placeholder="e.g. Sarah"/></div>
+            <div class="form-field"><label>Last Name</label><input type="text" id="f-lname" placeholder="e.g. Johnson"/></div>
+            <div class="form-field"><label>ZIP Code</label><input type="text" id="f-zip" inputmode="numeric" placeholder="e.g. 90210"/></div>
+            <div class="form-field">
+              <label>Accident Year</label>
+              <select id="f-year">
+                <option value="">Select year</option>
+                <option value="2025">2025</option>
+                <option value="2026">2026</option>
+              </select>
+            </div>
+            <div class="form-field"><label>Phone</label><input type="tel" id="f-phone" placeholder="e.g. 555-0100"/></div>
+            <div class="form-field"><label>State</label><input type="text" id="f-state" placeholder="e.g. CA"/></div>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-red btn-sm" id="form-clear-btn">Clear</button>
+            <button class="btn btn-green btn-sm flex-1" id="form-complete-btn">Mark Complete ✓</button>
+          </div>
+        </div>
+
+        <!-- Call Feed -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">📻 Call Feed</span>
+            <button class="btn btn-sm" id="clear-feed-btn" style="padding:4px 10px;font-size:0.72rem;">Clear</button>
+          </div>
+          <div id="call-feed"></div>
+          <div id="input-row">
+            <button id="mic-btn" title="Speak">🎤</button>
+            <input type="text" id="agent-input" placeholder="Type what Mark says…" autocomplete="off"/>
+            <button id="send-btn">➤</button>
+          </div>
+        </div>
+
+        <div class="section-gap"></div>
+      </div>
+    </div>
+
+    <!-- POST-CALL REPORT -->
+    <div id="report-section" class="hidden">
+      <div class="container page-top">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">📊 Call Report</span>
+            <button class="btn btn-sm btn-blue" id="new-call-btn">New Call</button>
+          </div>
+          <div id="report-content"></div>
+        </div>
+        <div class="section-gap"></div>
+      </div>
+    </div>
+
+  </div><!-- end page-call -->
+
+  <!-- ════════════════════ PAGE 2: AI NEWS ════════════════════ -->
+  <div class="page" id="page-news">
+    <div class="container page-top">
+      <div class="news-title-row">
+        <div>
+          <div style="font-size:1.15rem;font-weight:800;">📰 AI News</div>
+          <div class="text-sm text-dim">Simple AI stories — easy English</div>
+        </div>
+        <button class="news-refresh-btn" id="news-refresh-btn">🔄 Refresh</button>
+      </div>
+      <div id="news-list">
+        <div class="news-loading">
+          <div class="news-spinner"></div>
+          <div class="text-muted text-sm">Loading AI news...</div>
+        </div>
+      </div>
+      <div class="section-gap"></div>
+    </div>
+  </div>
+
+  <!-- ════════════════════ PAGE 3: STATS ════════════════════ -->
+  <div class="page" id="page-stats">
+    <div class="container page-top">
+
+      <!-- Patch Rate -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">📡 Patch Rate</span>
+          <span id="patch-rate-label" class="status-chip chip-done">Keep Going</span>
+        </div>
+        <div class="stat-big" id="patch-rate-pct" style="color:var(--red)">0%</div>
+        <div class="patch-bar-bg"><div class="patch-bar-fill" id="patch-bar" style="width:0%;background:var(--red)"></div></div>
+        <div class="text-sm text-muted" id="patch-count-label">0 patched / 0 total calls</div>
+      </div>
+
+      <!-- Streak + Today -->
+      <div class="stats-row" style="margin-bottom:12px;">
+        <div class="card" style="flex:1;margin-bottom:0;text-align:center;">
+          <div class="card-title" style="margin-bottom:6px;">🔥 Day Streak</div>
+          <div class="streak-num" id="streak-num">0</div>
+          <div class="text-sm text-dim">days</div>
+        </div>
+        <div class="card" style="flex:1;margin-bottom:0;text-align:center;">
+          <div class="card-title" style="margin-bottom:6px;">⭐ Avg Score</div>
+          <div class="stat-big" id="avg-score" style="font-size:2.2rem;">—</div>
+          <div class="text-sm text-dim">/10 all-time</div>
+        </div>
+      </div>
+
+      <!-- Today -->
+      <div class="card-title" style="margin-bottom:8px;color:var(--t3);">TODAY</div>
+      <div class="today-grid">
+        <div class="today-cell"><div class="today-num" id="today-calls">0</div><div class="today-lbl">Calls</div></div>
+        <div class="today-cell"><div class="today-num" id="today-patches">0</div><div class="today-lbl">Patches</div></div>
+        <div class="today-cell"><div class="today-num" id="today-mocks">0</div><div class="today-lbl">Mocks</div></div>
+      </div>
+
+      <!-- Log buttons -->
+      <div class="log-btns">
+        <button class="btn btn-blue" id="log-call-btn">+ Real Call</button>
+        <button class="btn btn-green" id="log-patch-btn">+ Patch ✓</button>
+      </div>
+
+      <!-- All-time -->
+      <div class="card-title" style="margin-bottom:8px;color:var(--t3);">ALL TIME</div>
+      <div class="alltime-row" style="margin-bottom:12px;">
+        <div class="alltime-cell"><div class="alltime-num" id="all-mocks">0</div><div class="alltime-lbl">Total Mocks</div></div>
+        <div class="alltime-cell"><div class="alltime-num" id="all-patches">0</div><div class="alltime-lbl">Patches</div></div>
+        <div class="alltime-cell"><div class="alltime-num" id="all-calls">0</div><div class="alltime-lbl">Real Calls</div></div>
+      </div>
+
+      <!-- Unlock progress -->
+      <div class="card">
+        <div class="card-header"><span class="card-title">🔓 Unlock Progress</span></div>
+        <div id="unlock-progress"></div>
+      </div>
+
+      <!-- Reset -->
+      <button class="btn btn-red btn-full" id="reset-today-btn" style="margin-bottom:8px;">🔄 Reset Today's Stats</button>
+      <div class="section-gap"></div>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <nav class="bottom-nav">
+    <button class="nav-tab active" data-page="call" id="nav-call">
+      <span class="nav-icon">📞</span>
+      <span>Live Call</span>
+    </button>
+    <button class="nav-tab" data-page="news" id="nav-news">
+      <span class="nav-icon">📰</span>
+      <span>AI News</span>
+    </button>
+    <button class="nav-tab" data-page="stats" id="nav-stats">
+      <span class="nav-icon">📊</span>
+      <span>Stats</span>
+    </button>
+  </nav>
+
+</div><!-- end app -->
+
+<!-- SETTINGS MODAL -->
+<div id="settings-overlay">
+  <div id="settings-modal">
+    <div class="modal-drag"></div>
+    <div class="modal-title">⚙️ Settings</div>
+
+    <div class="settings-section">
+      <div class="settings-section-title">🥇 Groq — Primary (Fastest, Free)</div>
+      <div class="settings-field">
+        <label>Groq API Key</label>
+        <input type="password" id="set-groq" placeholder="gsk_…" autocomplete="off"/>
+        <div class="settings-hint">Free at <strong>console.groq.com</strong> — 14,400 req/day, fastest model</div>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <div class="settings-section-title">🥈 OpenRouter — Backup (Auto-switch)</div>
+      <div class="settings-field">
+        <label>OpenRouter API Key</label>
+        <input type="password" id="set-openrouter" placeholder="sk-or-…" autocomplete="off"/>
+        <div class="settings-hint">Free at <strong>openrouter.ai</strong> — used when Groq hits limit</div>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <div class="settings-section-title">🥉 Cloudflare — Last Resort (10k/day Free)</div>
+      <div class="settings-field">
+        <label>Cloudflare Token</label>
+        <input type="password" id="set-cf-token" placeholder="Cloudflare API Token" autocomplete="off"/>
+      </div>
+      <div class="settings-field">
+        <label>Cloudflare Account ID</label>
+        <input type="text" id="set-cf-account" placeholder="Account ID from dash.cloudflare.com" autocomplete="off"/>
+        <div class="settings-hint">Free at <strong>dash.cloudflare.com → AI</strong> — 10k requests/day</div>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <div class="settings-section-title">🔊 Voice (Optional — ElevenLabs)</div>
+      <div class="settings-field">
+        <label>ElevenLabs API Key</label>
+        <input type="password" id="set-eleven" placeholder="ElevenLabs API Key" autocomplete="off"/>
+      </div>
+      <div class="settings-field">
+        <label>ARIA Voice ID</label>
+        <input type="text" id="set-aria-voice" placeholder="21m00Tcm4TlvDq8ikWAM"/>
+        <div class="settings-hint">Default: <span class="mono">21m00Tcm4TlvDq8ikWAM</span></div>
+      </div>
+      <div class="settings-field">
+        <label>Client Voice ID</label>
+        <input type="text" id="set-client-voice" placeholder="ODq5zmih8GrVes37Dizd"/>
+        <div class="settings-hint">Default: <span class="mono">ODq5zmih8GrVes37Dizd</span></div>
+      </div>
+    </div>
+
+    <div class="settings-notice">🔒 All API keys are stored on this device only. ARIA never shares them. Tries Groq → OpenRouter → Cloudflare automatically.</div>
+    <div class="settings-save-wrap">
+      <button class="btn btn-green btn-full btn-lg" id="settings-save-btn">💾 Save Settings</button>
+      <button class="btn btn-full" id="settings-close-btn" style="margin-top:8px;">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     JAVASCRIPT
+══════════════════════════════════════ -->
+<script>
+(() => {
+'use strict';
+
+/* ═══════════════════════════════════════════════
+   DATA STORE
+═══════════════════════════════════════════════ */
+const STORE_KEY = 'aria-v7';
+let store = {
+  settings: { groqKey:'', openrouterKey:'', cfToken:'', cfAccount:'', elevenKey:'', aVoice:'21m00Tcm4TlvDq8ikWAM', cVoice:'ODq5zmih8GrVes37Dizd' },
+  byDay: {},
+  streak: 0,
+  lastOpen: '',
+  totalMocks: 0,
+  allPatches: 0,
+  allCalls: 0,
+  confScores: [],
+  checkDone: []
+};
+
+function loadStore() {
+  try {
+    const raw = localStorage.getItem(STORE_KEY);
+    if (raw) store = Object.assign(store, JSON.parse(raw));
+  } catch(e) {}
+}
+function saveStore() {
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(store)); } catch(e) {}
+}
+function today() { return new Date().toISOString().slice(0,10); }
+function getDay(d) {
+  if (!store.byDay[d]) store.byDay[d] = {calls:0, patches:0, mocks:0};
+  return store.byDay[d];
+}
+
+/* ═══════════════════════════════════════════════
+   CLIENT TYPES
+═══════════════════════════════════════════════ */
+const CLIENT_TYPES = {
+  'l1-friendly': { level:1, label:'Friendly', desc:'Warm, trusting, cooperative. Easy.', emoji:'😊' },
+  'l1-confused':  { level:1, label:'Confused',  desc:'Confused but willing. Asks simple questions.', emoji:'🤔' },
+  'l1-quiet':     { level:1, label:'Quiet',     desc:'Very short answers. Not rude. Easy to move.', emoji:'🤫' },
+  'l1-chatty':    { level:1, label:'Chatty',    desc:'Talks a lot, goes off topic. Cooperative.', emoji:'💬' },
+  'l1-elderly':   { level:1, label:'Elderly',   desc:'60+, speaks slowly, very trusting. Be patient.', emoji:'👴' },
+  'l2-skeptical': { level:2, label:'Skeptical', desc:'Questions everything. Wants logic and proof.', emoji:'🧐' },
+  'l2-busy':      { level:2, label:'Busy',      desc:'Short clipped answers. No time. Be concise.', emoji:'⏰' },
+  'l2-cautious':  { level:2, label:'Cautious',  desc:'Privacy-worried. Needs reassurance.', emoji:'🛡️' },
+  'l2-handled':   { level:2, label:'Handled',   desc:'Claims already settled. Plant doubt.', emoji:'✅' },
+  'l2-maybe':     { level:2, label:'Maybe',     desc:'Undecided. Needs gentle convincing.', emoji:'🤷' },
+  'l3-attorney':  { level:3, label:'Attorney',  desc:'Has attorney. Firm and curt. Hard to keep.', emoji:'⚖️' },
+  'l3-angry':     { level:3, label:'Angry',     desc:'Irritated from first second. Will hang up.', emoji:'😡' },
+  'l3-scam':      { level:3, label:'Scam Suspect', desc:'Convinced it is a scam. Very suspicious.', emoji:'🚨' },
+  'l3-trap':      { level:3, label:'Trap',      desc:'Tests agent with trap questions. Needs perfect deflections.', emoji:'🪤' },
+  'l3-recorded':  { level:3, label:'Recording', desc:'Says recording the call. Be professional.', emoji:'🔴' }
+};
+
+const FIRST_NAMES = ['Sarah','Michael','Jennifer','David','Jessica','Robert','Ashley','James','Maria','John'];
+const LAST_NAMES  = ['Johnson','Williams','Brown','Davis','Miller','Wilson','Moore','Taylor','Anderson','Thomas'];
+const ZIP_CODES   = ['90210','10001','77001','30301','60601','85001','33101','94102','19103','80201'];
+const ACC_YEARS   = ['2025','2026'];
+const STATES      = ['California','Texas','Florida','New York','Ohio','Arizona','Illinois','Pennsylvania','Georgia','Colorado'];
+
+/* ═══════════════════════════════════════════════
+   SCRIPT STEPS
+═══════════════════════════════════════════════ */
+const BASE_STEPS = [
+  { id:'s1',  name:'Opener',           script:'"Hello, my name is Mark. How are you doing today?"' },
+  { id:'s2',  name:'Reason for Call',  script:'"I\'m calling about a car accident from last year — it looks like your compensation money may not have been fully delivered to you yet. Does that ring a bell?"' },
+  { id:'s3',  name:'Attorney Check',   script:'"Just to confirm — is there any attorney currently working on your case?"' },
+  // s-legal is inserted dynamically if client has attorney
+  { id:'s5',  name:'Fault Check',      script:'"According to the police report, who was placed at fault — you or the other person?"' },
+  { id:'s6',  name:'Police Ticket',    script:'"Did you receive any ticket from the police at the scene?"' },
+  { id:'s7',  name:'Medical Treatment',script:'"Did you receive any medical treatment after the accident?"' },
+  { id:'s8',  name:'Pain Check',       script:'"Did you experience any pain — back pain, neck pain, or shoulder pain?"' },
+  { id:'s9',  name:'Current Pain',     script:'"I\'m so sorry to hear that. How are you feeling now — better, or still having those pains?"' },
+  { id:'s10', name:'Collect Info',     script:'"That\'s great — I just need a few quick details. Can I get your first and last name, your ZIP code, and was the accident in 2025 or 2026?"' },
+  { id:'s11', name:'Patch to Specialist', script:'"Perfect — let me patch you through to my senior specialist right now who will walk you through your compensation."' }
+];
+const LEGAL_STEP = { id:'s-legal', name:'Legal Docs', script:'"Did you actually sign a legal representation agreement with them?"', dynamic:true };
+
+/* ═══════════════════════════════════════════════
+   TRAP DETECTION & BRIDGES
+═══════════════════════════════════════════════ */
+const TRAPS = [
+  {
+    triggers: ['tell me my name','what is my name','what\'s my name','say my name','if you have my info'],
+    answer: 'I have your file flagged here, but for privacy and security I can\'t read personal details over the phone — that actually protects you from fraud.',
+    bridge: 'Can I just verify a couple of quick details with you instead?'
+  },
+  {
+    triggers: ['what\'s my address','what is my address','my address'],
+    answer: 'Our policy is we verify — not reveal — personal details over the phone. Standard fraud protection.',
+    bridge: 'Can I just confirm a couple of things to make sure we have the right file?'
+  },
+  {
+    triggers: ['where did you get my number','how did you get my number','where did you get my information','where did you get my info'],
+    answer: 'Your name was flagged through accident records. When accidents are reported to police or insurance, claimant info goes into a national compensation database.',
+    bridge: 'I\'m just calling to make sure compensation was delivered to you. Were you in an accident in 2025 or 2026?'
+  },
+  {
+    triggers: ['is this a scam','this is a scam','sounds like a scam','think this is a scam'],
+    answer: 'Completely valid — I\'m not asking for any money, bank details, or passwords. I\'m only checking whether compensation money was delivered to you.',
+    bridge: 'It takes 2 minutes and costs you nothing. Can I just ask one quick question?'
+  },
+  {
+    triggers: ['i\'m recording','i am recording','recording this call','recording you'],
+    answer: 'Absolutely fine — we record ours too for quality purposes.',
+    bridge: 'I\'m just calling about potential compensation money. Is that okay?'
+  },
+  {
+    triggers: ['prove you\'re legit','how do i know this is real','prove it','show me proof','are you legitimate'],
+    answer: 'I understand — I\'m not asking for any payment or sensitive information at all.',
+    bridge: 'Can I just ask one quick question to check your file?'
+  },
+  {
+    triggers: ['what\'s my date of birth','what is my date of birth','my date of birth','my birthday','dob'],
+    answer: 'I can\'t share personal details over the phone for security reasons — that protects you.',
+    bridge: 'Can I just verify a couple of quick details with you instead?'
+  },
+  {
+    triggers: ['what\'s my accident date','what is my accident date','accident year','when was my accident','what year was my accident'],
+    answer: 'I have the file flagged but I need you to confirm details for verification purposes.',
+    bridge: 'Can you tell me roughly when the accident happened — was it 2025 or 2026?'
+  }
+];
+
+function detectTrap(text) {
+  const lower = text.toLowerCase();
+  return TRAPS.find(t => t.triggers.some(tr => lower.includes(tr))) || null;
+}
+
+/* ═══════════════════════════════════════════════
+   CHECKLIST
+═══════════════════════════════════════════════ */
+const CHECKLIST_ITEMS = [
+  'Headset on and tested — no background noise',
+  'Voice warm-up done — clear and confident',
+  'Script visible and ready to follow',
+  'Water nearby — stay hydrated',
+  'Mind clear — ready to be Mark'
+];
+
+/* ═══════════════════════════════════════════════
+   APP STATE
+═══════════════════════════════════════════════ */
+let state = {
+  tab: 'call',
+  callActive: false,
+  selectedClient: null,
+  selectedLevel: 1,
+  steps: [],
+  currentStepIdx: 0,
+  clientSecret: {},
+  confScore: 5,
+  confHistory: [],
+  callStartTime: null,
+  callTimerInterval: null,
+  offScript: false,
+  activeAPI: 'nokey',
+  speechRec: null,
+  speechActive: false,
+  hangupQueued: false,
+  totalThisCallConf: [],
+  legalStepInserted: false,
+  newsLoaded: false
+};
+
+/* ═══════════════════════════════════════════════
+   UTILITIES
+═══════════════════════════════════════════════ */
+function rand(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+function el(id) { return document.getElementById(id); }
+function toast(msg, type='info', dur=3500) {
+  const t = document.createElement('div');
+  t.className = `toast toast-${type}`;
+  t.textContent = msg;
+  el('toast-area').appendChild(t);
+  setTimeout(() => t.remove(), dur + 400);
+}
+
+function setOrb(mode, statusText) {
+  const orb = el('main-orb');
+  orb.className = `orb ${mode}`;
+  el('orb-status').textContent = statusText;
+}
+
+/* ═══════════════════════════════════════════════
+   API PILL UPDATE
+═══════════════════════════════════════════════ */
+function setAPIPill(api) {
+  state.activeAPI = api;
+  const pill = el('api-pill');
+  const labels = { groq:'Groq ●', openrouter:'OpenRouter ●', cloudflare:'Cloudflare ●', nokey:'No Key ✕' };
+  const cls = { groq:'groq', openrouter:'openrouter', cloudflare:'cloudflare', nokey:'nokey' };
+  pill.textContent = labels[api] || 'No Key ✕';
+  pill.className = `api-pill ${cls[api] || 'nokey'}`;
+}
+
+/* ═══════════════════════════════════════════════
+   TRIPLE API FALLBACK
+═══════════════════════════════════════════════ */
+async function callAI(messages, maxTokens=300) {
+  const s = store.settings;
+
+  // Try Groq
+  if (s.groqKey) {
+    try {
+      const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method:'POST',
+        headers: { 'Content-Type':'application/json', 'Authorization':`Bearer ${s.groqKey}` },
+        body: JSON.stringify({ model:'llama-3.3-70b-versatile', messages, max_tokens:maxTokens, temperature:0.7 })
+      });
+      if (r.status === 401) throw {code:'INVALID_KEY'};
+      if (r.status === 429) { toast('Groq limit hit — switching to OpenRouter', 'warn'); throw {code:'RATE_LIMIT'}; }
+      if (!r.ok) throw {code:'ERROR'};
+      const data = await r.json();
+      setAPIPill('groq');
+      return data.choices[0].message.content;
+    } catch(e) {
+      if (e.code === 'INVALID_KEY') { toast('Groq key invalid', 'error'); }
+      if (e.code !== 'RATE_LIMIT') { /* fall through */ }
+    }
+  }
+
+  // Try OpenRouter
+  if (s.openrouterKey) {
+    try {
+      const r = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method:'POST',
+        headers: {
+          'Content-Type':'application/json',
+          'Authorization':`Bearer ${s.openrouterKey}`,
+          'HTTP-Referer':'https://aria-coach.app',
+          'X-Title':'ARIA Call Coach'
+        },
+        body: JSON.stringify({ model:'meta-llama/llama-3.1-8b-instruct:free', messages, max_tokens:maxTokens, temperature:0.7 })
+      });
+      if (!r.ok) throw new Error('OR fail');
+      const data = await r.json();
+      setAPIPill('openrouter');
+      return data.choices[0].message.content;
+    } catch(e) {
+      toast('OpenRouter failed — switching to Cloudflare', 'warn');
+    }
+  }
+
+  // Try Cloudflare
+  if (s.cfToken && s.cfAccount) {
+    try {
+      const r = await fetch(`https://api.cloudflare.com/client/v4/accounts/${s.cfAccount}/ai/run/@cf/meta/llama-3.1-8b-instruct`, {
+        method:'POST',
+        headers: { 'Content-Type':'application/json', 'Authorization':`Bearer ${s.cfToken}` },
+        body: JSON.stringify({ messages })
+      });
+      if (!r.ok) throw new Error('CF fail');
+      const data = await r.json();
+      setAPIPill('cloudflare');
+      return data.result.response;
+    } catch(e) {
+      toast('Cloudflare failed — running without AI', 'error');
+    }
+  }
+
+  setAPIPill('nokey');
+  throw {code:'NO_KEY'};
+}
+
+/* ═══════════════════════════════════════════════
+   VOICE — ELEVENLABS + FALLBACK
+═══════════════════════════════════════════════ */
+let audioEl = null;
+async function speakText(text, isClient=false) {
+  const s = store.settings;
+  setOrb('speaking', 'Speaking..');
+  if (s.elevenKey) {
+    const voiceId = isClient ? (s.cVoice || 'ODq5zmih8GrVes37Dizd') : (s.aVoice || '21m00Tcm4TlvDq8ikWAM');
+    try {
+      const r = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
+        method:'POST',
+        headers: { 'xi-api-key':s.elevenKey, 'Content-Type':'application/json' },
+        body: JSON.stringify({ text, model_id:'eleven_flash_v2_5', voice_settings:{stability:0.5, similarity_boost:0.75} })
+      });
+      if (r.ok) {
+        const blob = await r.blob();
+        const url = URL.createObjectURL(blob);
+        if (audioEl) { audioEl.pause(); URL.revokeObjectURL(audioEl.src); }
+        audioEl = new Audio(url);
+        audioEl.onended = () => { setOrb('idle', 'Ready'); URL.revokeObjectURL(url); };
+        audioEl.play();
+        return;
+      }
+    } catch(e) {}
+  }
+  // Web Speech fallback
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.cancel();
+    const utt = new SpeechSynthesisUtterance(text);
+    utt.lang = 'en-US';
+    utt.rate = 0.95;
+    const voices = window.speechSynthesis.getVoices();
+    const female = voices.find(v => v.lang === 'en-US' && v.name.toLowerCase().includes('female'))
+      || voices.find(v => v.lang === 'en-US' && (v.name.includes('Samantha') || v.name.includes('Susan') || v.name.includes('Karen') || v.name.includes('Google US English')))
+      || voices.find(v => v.lang.startsWith('en'));
+    if (female) utt.voice = female;
+    utt.onend = () => setOrb('idle', 'Ready');
+    window.speechSynthesis.speak(utt);
+  } else {
+    setTimeout(() => setOrb('idle', 'Ready'), 1500);
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   SPEECH RECOGNITION
+═══════════════════════════════════════════════ */
+function initSpeechRec() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) return null;
+  const rec = new SR();
+  rec.continuous = false;
+  rec.interimResults = false;
+  rec.lang = 'en-US';
+  rec.onresult = (e) => {
+    const transcript = e.results[0][0].transcript;
+    el('agent-input').value = transcript;
+    agentTurn(transcript);
+  };
+  rec.onend = () => {
+    state.speechActive = false;
+    el('mic-btn').classList.remove('active');
+    setOrb('idle', 'Ready');
+  };
+  rec.onerror = () => {
+    state.speechActive = false;
+    el('mic-btn').classList.remove('active');
+  };
+  return rec;
+}
+
+function startListening() {
+  if (!state.speechRec) state.speechRec = initSpeechRec();
+  if (!state.speechRec) { toast('Speech recognition not supported on this browser', 'warn'); return; }
+  if (state.speechActive) { state.speechRec.stop(); return; }
+  state.speechActive = true;
+  el('mic-btn').classList.add('active');
+  setOrb('listening', 'Listening..');
+  state.speechRec.start();
+}
+
+/* ═══════════════════════════════════════════════
+   CONFIDENCE METER
+═══════════════════════════════════════════════ */
+const CONF_UP_WORDS   = ['absolutely','perfect','great','exactly','no problem','let me','certainly','of course','sure thing','definitely'];
+const CONF_DOWN_WORDS = ['um ','uh ','i think','maybe','not sure','i don\'t know','i dunno','sorry um','like uh'];
+const CONF_CLIENT_POS = ['okay','sure','yes','alright','sounds good','that\'s right','all right','go ahead','fine'];
+const CONF_CLIENT_NEG = ['scam','hang up','stop calling','remove me','don\'t call','fraud','attorney','already settled','no interest','angry','leave me alone'];
+
+function adjustConf(delta, tip) {
+  const old = state.confScore;
+  state.confScore = Math.max(1, Math.min(10, state.confScore + delta));
+  if (state.confScore === old) return;
+  renderConf(delta, tip);
+}
+
+function renderConf(delta, tip) {
+  const score = state.confScore;
+  const numEl = el('conf-num');
+  numEl.textContent = score;
+
+  // Color
+  const color = score >= 7 ? 'var(--green)' : score >= 4 ? 'var(--amber)' : 'var(--red)';
+  numEl.style.color = color;
+
+  // Bar
+  const bar = el('conf-bar');
+  bar.style.width = `${score * 10}%`;
+  bar.style.background = color;
+
+  // Verdict
+  let verdict = '';
+  if (score >= 8) verdict = 'Elite 🔥';
+  else if (score >= 6) verdict = 'Strong 💪';
+  else if (score >= 4) verdict = 'Okay ⚡';
+  else verdict = 'Struggling ⚠️';
+  el('conf-verdict').textContent = verdict;
+
+  // Tip
+  if (tip) el('conf-tip').textContent = tip;
+
+  // Change indicator
+  const ch = el('conf-change');
+  ch.textContent = delta > 0 ? `+${delta}` : `${delta}`;
+  ch.style.color = delta > 0 ? 'var(--green)' : 'var(--red)';
+  ch.classList.remove('hidden');
+  ch.style.animation = 'none';
+  requestAnimationFrame(() => {
+    ch.style.animation = 'confPop 0.5s ease';
+  });
+  setTimeout(() => ch.classList.add('hidden'), 1800);
+}
+
+function analyzeAgentText(text) {
+  const lower = text.toLowerCase();
+  let delta = 0; let tip = '';
+  for (const w of CONF_UP_WORDS) {
+    if (lower.includes(w)) { delta += 1; tip = 'Great confident word! Keep it up.'; break; }
+  }
+  for (const w of CONF_DOWN_WORDS) {
+    if (lower.includes(w)) { delta -= 1; tip = 'Avoid filler words — sound more confident!'; break; }
+  }
+  if (delta !== 0) adjustConf(delta, tip);
+}
+
+function analyzeClientText(text) {
+  const lower = text.toLowerCase();
+  if (CONF_CLIENT_NEG.some(w => lower.includes(w))) {
+    adjustConf(-1, 'Client is resistant — stay calm and reassure.');
+    if (lower.includes('hang up') || lower.includes('stop calling') || lower.includes('remove me')) {
+      adjustConf(-1, 'Client wants to end the call.');
+    }
+  }
+  if (CONF_CLIENT_POS.some(w => lower.includes(w))) {
+    adjustConf(1, 'Client warming up — keep going! 🔥');
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   STEP TRACKER
+═══════════════════════════════════════════════ */
+function buildSteps() {
+  state.steps = BASE_STEPS.map(s => ({...s, status:'upcoming'}));
+  state.currentStepIdx = 0;
+  state.legalStepInserted = false;
+  if (state.steps[0]) state.steps[0].status = 'active';
+}
+
+function insertLegalStep() {
+  if (state.legalStepInserted) return;
+  // Insert after attorney check (s3, index 2)
+  const attyIdx = state.steps.findIndex(s => s.id === 's3');
+  if (attyIdx === -1) return;
+  state.steps.splice(attyIdx + 1, 0, {...LEGAL_STEP, status:'active'});
+  state.currentStepIdx = attyIdx + 1;
+  // Mark s3 as done
+  state.steps[attyIdx].status = 'done';
+  state.legalStepInserted = true;
+  toast('Client has attorney — Legal Docs step added', 'warn');
+  renderStepTracker();
+  renderCurrentStepTag();
+}
+
+function getCurrentStep() {
+  return state.steps[state.currentStepIdx] || null;
+}
+
+function advanceStep() {
+  if (state.currentStepIdx < state.steps.length) {
+    state.steps[state.currentStepIdx].status = 'done';
+    state.currentStepIdx++;
+    if (state.currentStepIdx < state.steps.length) {
+      state.steps[state.currentStepIdx].status = 'active';
+    }
+  }
+  state.offScript = false;
+  el('offscript-badge').classList.add('hidden');
+  renderStepTracker();
+  renderCurrentStepTag();
+  if (state.currentStepIdx >= state.steps.length) {
+    // All steps done
+    addFeedLine('aria', 'ARIA', 'All steps complete! Great job, Mark! 🎉');
+  }
+}
+
+function renderStepTracker() {
+  const el2 = el('step-tracker');
+  el2.innerHTML = '';
+  state.steps.forEach((step, i) => {
+    const div = document.createElement('div');
+    div.className = `step-item ${step.status}`;
+    const icon = step.status === 'done' ? '✓' : (step.status === 'active' ? (i+1) : (i+1));
+    const isDynamic = step.dynamic ? '<span class="skip-label">Attorney step</span>' : '';
+    const doneBtn = step.status === 'active'
+      ? `<button class="btn-done" data-idx="${i}">✓ Done</button>` : '';
+    div.innerHTML = `
+      <div class="step-dot">${icon}</div>
+      <div class="step-content">
+        <div class="step-title">${step.name} ${isDynamic}</div>
+        <div class="step-script">${step.script}</div>
+        ${step.status === 'active' ? `<div class="step-actions">${doneBtn}</div>` : ''}
+      </div>`;
+    el2.appendChild(div);
+  });
+  el2.querySelectorAll('.btn-done').forEach(b => {
+    b.addEventListener('click', () => {
+      const idx = parseInt(b.dataset.idx);
+      if (idx === state.currentStepIdx) {
+        handleStepDone();
+      }
+    });
+  });
+}
+
+function handleStepDone() {
+  const step = getCurrentStep();
+  if (!step) return;
+
+  // Special logic for specific steps
+  if (step.id === 's11') {
+    // Patch step done — log patch
+    adjustConf(3, 'Excellent! You patched the client! 🔥');
+    logPatch();
+    toast('🎉 Patch successful! Great work, Mark!', 'success');
+  }
+
+  advanceStep();
+  // Get AI suggestions for new step
+  if (state.currentStepIdx < state.steps.length) {
+    getAISuggestions('');
+  }
+}
+
+function renderCurrentStepTag() {
+  const step = getCurrentStep();
+  el('current-step-tag').textContent = step ? step.name : 'Complete';
+}
+
+/* ═══════════════════════════════════════════════
+   HANG UP LOGIC
+═══════════════════════════════════════════════ */
+function hangUpPolitely(reason) {
+  addFeedLine('system', 'SYSTEM', `⚠️ Hang up: ${reason}`);
+  addFeedLine('client', 'CLIENT', 'Goodbye.');
+  adjustConf(-2, 'Client hung up — review what went wrong.');
+  setTimeout(() => endCall(false), 800);
+}
+
+function checkHangupCondition(clientText) {
+  const lower = clientText.toLowerCase();
+  const step = getCurrentStep();
+  if (!step) return false;
+
+  // Always-on checks
+  if (lower.includes('stop calling') || lower.includes('remove me') || lower.includes('do not call')) {
+    hangUpPolitely('Client requested removal from call list');
+    return true;
+  }
+
+  // HANG_UP sentinel from AI
+  if (clientText.trim() === 'HANG_UP') {
+    hangUpPolitely('Client disqualified (ticket / signed docs / no treatment / no pain)');
+    return true;
+  }
+
+  // Step-specific
+  if (step.id === 's-legal') {
+    if (lower.includes('yes') || lower.includes('signed') || lower.includes('i did') || lower.includes('yeah')) {
+      hangUpPolitely('Client signed legal representation agreement with attorney');
+      return true;
+    }
+  }
+  if (step.id === 's6') {
+    if (lower.includes('yes') || lower.includes('i did') || lower.includes('got a ticket') || lower.includes('yeah')) {
+      hangUpPolitely('Client received a police ticket');
+      return true;
+    }
+  }
+  if (step.id === 's7') {
+    if (lower.includes('no') || lower.includes('didn\'t') || lower.includes('did not')) {
+      hangUpPolitely('Client had no medical treatment');
+      return true;
+    }
+  }
+  if (step.id === 's8') {
+    if (lower.includes('no') || lower.includes('felt fine') || lower.includes('no pain') || lower.includes('nothing')) {
+      hangUpPolitely('Client had no pain after accident');
+      return true;
+    }
+  }
+
+  // Attorney check — step s3
+  if (step.id === 's3') {
+    if (lower.includes('yes') || lower.includes('i have') || lower.includes('yeah') || lower.includes('attorney') || lower.includes('lawyer')) {
+      insertLegalStep();
+    }
+  }
+
+  return false;
+}
+
+/* ═══════════════════════════════════════════════
+   CALL FEED
+═══════════════════════════════════════════════ */
+function addFeedLine(type, speaker, text) {
+  const feed = el('call-feed');
+  const div = document.createElement('div');
+  div.className = `feed-line ${type}`;
+  div.innerHTML = `<div class="feed-speaker">${speaker}</div><div>${escHtml(text)}</div>`;
+  feed.appendChild(div);
+  feed.scrollTop = feed.scrollHeight;
+}
+function escHtml(t) {
+  return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+/* ═══════════════════════════════════════════════
+   BRIDGE DETECTION
+═══════════════════════════════════════════════ */
+function renderBridge(text) {
+  const trap = detectTrap(text);
+  const bc = el('bridge-content');
+  if (!trap) {
+    bc.innerHTML = '<div class="bridge-none">No trap detected — follow the script guide below. ✅</div>';
+    state.offScript = false;
+    el('offscript-badge').classList.add('hidden');
+    return false;
+  }
+  bc.innerHTML = `
+    <div class="bridge-top">
+      <div class="bridge-label" style="color:var(--green);">📢 Answer this exactly:</div>
+      <div class="bridge-text">"${escHtml(trap.answer)}"</div>
+    </div>
+    <div class="bridge-bottom">
+      <div class="bridge-label" style="color:var(--ac2);">🌉 Bridge back:</div>
+      <div class="bridge-text">"${escHtml(trap.bridge)}"</div>
+    </div>`;
+  state.offScript = true;
+  el('offscript-badge').classList.remove('hidden');
+  adjustConf(-1, 'Trap question detected — use the bridge!');
+  return true;
+}
+
+/* ═══════════════════════════════════════════════
+   AI SUGGESTIONS
+═══════════════════════════════════════════════ */
+async function getAISuggestions(clientLine) {
+  const step = getCurrentStep();
+  const aiContent = el('ai-content');
+  const stepLabel = step ? step.name : 'End';
+  const stepScript = step ? step.script : '';
+
+  // Always show current step immediately
+  aiContent.innerHTML = `
+    <div class="ai-current-step">
+      <div class="ai-step-label">Current Step: ${stepLabel}</div>
+      <div class="ai-step-line" id="ai-step-line">${stepScript}</div>
+    </div>
+    ${state.offScript ? `<div class="offscript-warn">⚠️ Off-script question — answer then bridge back. Step stays on <strong>${stepLabel}</strong> until you tap ✓ Done.</div>` : ''}
+    <div class="ai-loading">ARIA is thinking</div>`;
+
+  const sysPrompt = `You are ARIA, an AI coaching assistant for Mark (a call center agent) on a live cold call about car accident compensation claims.
+Script step: ${stepLabel}. Script line: ${stepScript}
+Client just said: "${clientLine || '(call just started / step just advanced)'}"
+${state.offScript ? 'The client asked an off-script / trap question. First help deflect, then bridge back to the current step.' : ''}
+Give exactly 2 reply options Mark can say RIGHT NOW. Max 2 sentences each. Warm, confident American English. Each reply must naturally lead toward completing this step.
+Format EXACTLY (no other text):
+OPT_A: [reply here]
+TIP_A: [one short coaching note]
+OPT_B: [reply here]
+TIP_B: [one short coaching note]`;
+
+  const messages = [
+    { role:'system', content: sysPrompt },
+    { role:'user', content: clientLine || 'Begin the call.' }
+  ];
+
+  setOrb('thinking', 'Thinking..');
+  try {
+    const raw = await callAI(messages, 280);
+    setOrb('idle', 'Ready');
+    const optA = (raw.match(/OPT_A:\s*(.+?)(?=TIP_A:|OPT_B:|$)/si) || [])[1]?.trim() || '';
+    const tipA = (raw.match(/TIP_A:\s*(.+?)(?=OPT_B:|TIP_B:|$)/si) || [])[1]?.trim() || '';
+    const optB = (raw.match(/OPT_B:\s*(.+?)(?=TIP_B:|$)/si) || [])[1]?.trim() || '';
+    const tipB = (raw.match(/TIP_B:\s*(.+?)$/si) || [])[1]?.trim() || '';
+
+    aiContent.innerHTML = `
+      <div class="ai-current-step">
+        <div class="ai-step-label">Current Step: ${stepLabel}</div>
+        <div class="ai-step-line">${stepScript}</div>
+      </div>
+      ${state.offScript ? `<div class="offscript-warn">⚠️ Off-script question — answer then bridge back. Step stays on <strong>${stepLabel}</strong> until you tap ✓ Done.</div>` : ''}
+      ${optA ? `<div class="ai-opt-card" onclick="copyToInput(this.querySelector('.ai-opt-text').textContent)">
+        <div class="ai-opt-label">Option A</div>
+        <div class="ai-opt-text">${escHtml(optA)}</div>
+        <div class="ai-tip">💡 ${escHtml(tipA)}</div>
+      </div>` : ''}
+      ${optB ? `<div class="ai-opt-card" onclick="copyToInput(this.querySelector('.ai-opt-text').textContent)">
+        <div class="ai-opt-label">Option B</div>
+        <div class="ai-opt-text">${escHtml(optB)}</div>
+        <div class="ai-tip">💡 ${escHtml(tipB)}</div>
+      </div>` : ''}
+      ${!optA && !optB ? '<div class="text-dim text-sm" style="padding:12px 0">No AI suggestions — check your API key in settings.</div>' : ''}`;
+  } catch(e) {
+    setOrb('idle', 'Ready');
+    aiContent.innerHTML = `
+      <div class="ai-current-step">
+        <div class="ai-step-label">Current Step: ${stepLabel}</div>
+        <div class="ai-step-line">${stepScript}</div>
+      </div>
+      <div class="text-dim text-sm" style="padding:8px 0">⚠️ No AI key — follow the script above. Add an API key in ⚙️ Settings.</div>`;
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   AGENT TURN
+═══════════════════════════════════════════════ */
+async function agentTurn(text) {
+  if (!text || !text.trim() || !state.callActive) return;
+  el('agent-input').value = '';
+  addFeedLine('agent', 'MARK', text);
+  analyzeAgentText(text);
+  renderBridge(text); // detect if agent typed a trap-like phrase? no, detect from client side
+
+  // Get client AI response
+  await clientTurn(text);
+}
+
+/* ═══════════════════════════════════════════════
+   CLIENT AI TURN
+═══════════════════════════════════════════════ */
+async function clientTurn(agentText) {
+  if (!state.callActive) return;
+  const step = getCurrentStep();
+  const secret = state.clientSecret;
+  const ct = CLIENT_TYPES[state.selectedClient];
+
+  const clientSys = `You are playing the role of a real American person named ${secret.firstName} ${secret.lastName} who was in a car accident in ${secret.accidentYear}.
+Your ZIP code is ${secret.zip}. Your state is ${secret.state}. You are a "${ct?.label || 'friendly'}" type personality: ${ct?.desc || ''}
+The caller (Mark) is a compensation claim agent.
+RULES:
+- MAX 1-2 short sentences per reply. NEVER longer.
+- Only answer what was directly asked — never volunteer extra info.
+- Give first name only when asked "what is your name" or "can I get your name". Give last name only if specifically asked for last name.
+- Give ZIP code only if Mark sounds professional and asks directly.
+- If you should hang up (police ticket question answered yes, signed legal docs with attorney, no medical treatment, no pain) → reply exactly: HANG_UP
+- Never break character. React to confidence: confident agent gets softer response, nervous agent stays more guarded.
+- Stay as "${ct?.label}" personality throughout.`;
+
+  const messages = [
+    { role:'system', content: clientSys },
+    { role:'user', content: agentText }
+  ];
+
+  setOrb('thinking', 'Thinking..');
+  try {
+    const reply = await callAI(messages, 80);
+    setOrb('idle', 'Ready');
+    const clean = reply.trim();
+
+    // Check for hang up sentinel
+    if (clean === 'HANG_UP') {
+      hangUpPolitely('Client disqualified');
+      return;
+    }
+
+    addFeedLine('client', 'CLIENT', clean);
+    analyzeClientText(clean);
+
+    // Detect trap in client's reply
+    renderBridge(clean);
+
+    // Check step-specific hangup conditions
+    if (checkHangupCondition(clean)) return;
+
+    // Speak client reply
+    speakText(clean, true).catch(() => {});
+
+    // Auto-listen for agent after delay
+    setTimeout(() => {
+      if (state.callActive && state.speechRec) {
+        // startListening(); // commented — only on manual tap to avoid UX issues
+      }
+    }, 500);
+
+    // Get AI suggestions for agent
+    getAISuggestions(clean);
+
+  } catch(e) {
+    setOrb('idle', 'Ready');
+    // No key — just show suggestions without client response
+    getAISuggestions(agentText);
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   CALL START / END
+═══════════════════════════════════════════════ */
+function startCall() {
+  if (!state.selectedClient) { toast('Please select a client type first', 'warn'); return; }
+  const ct = CLIENT_TYPES[state.selectedClient];
+  const level = ct.level;
+
+  // Unlock check
+  const mocks = store.totalMocks;
+  if (level === 2 && mocks < 8) { toast(`Level 2 unlocks after 8 mocks. You have ${mocks}.`, 'warn'); return; }
+  if (level === 3 && mocks < 20) { toast(`Level 3 unlocks after 20 mocks. You have ${mocks}.`, 'warn'); return; }
+
+  // Generate client secret
+  state.clientSecret = {
+    firstName: rand(FIRST_NAMES),
+    lastName:  rand(LAST_NAMES),
+    zip:       rand(ZIP_CODES),
+    accidentYear: rand(ACC_YEARS),
+    state:     rand(STATES)
+  };
+
+  // Reset state
+  state.callActive = true;
+  state.confScore = 5;
+  state.offScript = false;
+  state.hangupQueued = false;
+  state.legalStepInserted = false;
+  state.totalThisCallConf = [];
+  buildSteps();
+
+  // Show active call
+  el('precall-view').classList.add('hidden');
+  el('report-section').classList.add('hidden');
+  el('active-call-view').classList.remove('hidden');
+
+  // Clear feed & form
+  el('call-feed').innerHTML = '';
+  ['f-fname','f-lname','f-zip','f-phone','f-state'].forEach(id => { el(id).value = ''; el(id).classList.remove('filled'); });
+  el('f-year').value = '';
+
+  // Reset confidence display
+  state.confScore = 5;
+  renderConf(0, 'Stay confident and follow the script!');
+  el('conf-change').classList.add('hidden');
+
+  // Clear bridge
+  el('bridge-content').innerHTML = '<div class="bridge-none">No trap detected — follow the script guide below. ✅</div>';
+  el('offscript-badge').classList.add('hidden');
+
+  // Timer
+  state.callStartTime = Date.now();
+  state.callTimerInterval = setInterval(() => {
+    const sec = Math.floor((Date.now() - state.callStartTime) / 1000);
+    const m = Math.floor(sec/60);
+    const s = sec % 60;
+    el('call-timer').textContent = `${m}:${s.toString().padStart(2,'0')}`;
+  }, 1000);
+
+  // Render steps
+  renderStepTracker();
+  renderCurrentStepTag();
+
+  // First suggestion
+  getAISuggestions('');
+
+  // Feed intro
+  addFeedLine('system', 'ARIA', `🎙️ Mock call started with ${ct.label} client (${state.selectedClient}). Client is ready.`);
+  addFeedLine('aria', 'ARIA', `Tip: Say the opener! 💪 "Hello, my name is Mark. How are you doing today?"`);
+
+  // Speak intro
+  speakText('Call connected. Client is on the line. Begin with the opener.', false).catch(() => {});
+
+  // Update stats
+  store.totalMocks++;
+  getDay(today()).mocks++;
+  saveStore();
+  updateStatsUI();
+
+  toast(`📞 Call started! Client: ${ct.label} (${state.selectedClient})`, 'info');
+  setOrb('idle', 'Ready');
+}
+
+function endCall(success=true) {
+  if (!state.callActive) return;
+  state.callActive = false;
+  clearInterval(state.callTimerInterval);
+
+  const duration = Math.floor((Date.now() - state.callStartTime) / 1000);
+  const finalScore = state.confScore;
+
+  // Save score
+  store.confScores.push(finalScore);
+  if (store.confScores.length > 50) store.confScores.shift();
+  saveStore();
+
+  // Hide active, show report
+  el('active-call-view').classList.add('hidden');
+  el('report-section').classList.remove('hidden');
+
+  renderReport(finalScore, duration);
+  updateStatsUI();
+
+  if (state.speechRec) { try { state.speechRec.stop(); } catch(e){} }
+  setOrb('idle', 'Ready');
+  window.speechSynthesis && window.speechSynthesis.cancel();
+}
+
+function logPatch() {
+  store.allPatches++;
+  getDay(today()).patches++;
+  saveStore();
+  updateStatsUI();
+}
+
+/* ═══════════════════════════════════════════════
+   POST-CALL REPORT
+═══════════════════════════════════════════════ */
+function renderReport(score, duration) {
+  const mins = Math.floor(duration/60);
+  const secs = duration%60;
+  const stars = score >= 8 ? '⭐⭐⭐⭐⭐' : score >= 6 ? '⭐⭐⭐⭐' : score >= 4 ? '⭐⭐⭐' : '⭐⭐';
+  const color = score >= 7 ? 'var(--green)' : score >= 4 ? 'var(--amber)' : 'var(--red)';
+
+  // Client info collected
+  const infoFields = [
+    {label:'First Name', id:'f-fname'}, {label:'Last Name', id:'f-lname'},
+    {label:'ZIP Code', id:'f-zip'}, {label:'Accident Year', id:'f-year'},
+    {label:'Phone', id:'f-phone'}, {label:'State', id:'f-state'}
+  ];
+  const collected = infoFields.filter(f => {
+    const e = el(f.id); return e && e.value && e.value.trim();
+  });
+  const missed = infoFields.filter(f => {
+    const e = el(f.id); return !e || !e.value || !e.value.trim();
+  });
+
+  const verdict = score >= 8 ? 'Elite performance — you nailed it! 🔥' : score >= 6 ? 'Strong call — keep building! 💪' : score >= 4 ? 'Decent call — more practice needed. ⚡' : 'Tough call — review the script and try again. ⚠️';
+
+  const workedItems = score >= 6
+    ? ['Good confident tone throughout','Followed the script structure','Client engaged well with your approach']
+    : ['Showed up and practiced — that matters','Made it through the script steps','Kept composure during the call'];
+  const improveItems = score < 7
+    ? ['Reduce filler words (um, uh, I think)','Use confident openers: "Absolutely", "Perfect", "Great"','Bridge back faster after off-script questions']
+    : ['Continue building rapport before info collection','Handle traps with even more confidence','Aim for a full patch every call'];
+
+  el('report-content').innerHTML = `
+    <div class="report-score-row">
+      <div class="report-score-big" style="border-color:${color};color:${color};">
+        <div class="report-score-num">${score}</div>
+        <div class="report-score-label">/10</div>
+      </div>
+      <div>
+        <div class="stars">${stars}</div>
+        <div style="font-weight:700;margin:4px 0;">${verdict}</div>
+        <div class="text-sm text-muted">Duration: ${mins}m ${secs}s</div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="report-section-title">📝 Info Collected (${collected.length}/${infoFields.length})</div>
+    ${collected.map(f => `<div class="report-item" style="color:var(--green);">✓ ${f.label}: ${el(f.id).value}</div>`).join('')}
+    ${missed.map(f => `<div class="report-item" style="color:var(--red);">✗ ${f.label}: not collected</div>`).join('')}
+
+    <div class="divider"></div>
+    <div class="report-section-title">✅ What Worked</div>
+    ${workedItems.map(i => `<div class="report-item">${escHtml(i)}</div>`).join('')}
+
+    <div class="divider"></div>
+    <div class="report-section-title">📈 Improve Next Time</div>
+    ${improveItems.map(i => `<div class="report-item">${escHtml(i)}</div>`).join('')}
+
+    <div class="divider"></div>
+    <div class="report-section-title">🎯 Focus for Next Call</div>
+    <div class="report-item">${score < 5 ? 'Practice the opener and attorney check — build early confidence' : score < 7 ? 'Work on bridging trap questions smoothly' : 'Push for the full patch every single call!'}</div>`;
+}
+
+/* ═══════════════════════════════════════════════
+   AI NEWS
+═══════════════════════════════════════════════ */
+async function loadNews() {
+  const list = el('news-list');
+  list.innerHTML = `<div class="news-loading"><div class="news-spinner"></div><div class="text-muted text-sm">Loading AI news...</div></div>`;
+
+  try {
+    const r = await fetch('https://hn.algolia.com/api/v1/search_by_date?query=artificial+intelligence+LLM+ChatGPT+OpenAI&tags=story&hitsPerPage=10');
+    if (!r.ok) throw new Error('HN fail');
+    const data = await r.json();
+    const stories = (data.hits || []).filter(h => h.title && h.url).slice(0,5);
+
+    if (!stories.length) {
+      list.innerHTML = '<div class="card"><div class="text-muted text-sm" style="text-align:center;padding:20px;">No stories found. Try refreshing.</div></div>';
+      return;
+    }
+
+    // Summarize via AI (best effort)
+    const summaries = await Promise.allSettled(stories.map(s => summarizeStory(s)));
+
+    list.innerHTML = stories.map((story, i) => {
+      const sumResult = summaries[i];
+      const sum = sumResult.status === 'fulfilled' ? sumResult.value : null;
+      return `<div class="card news-card" onclick="window.open('${story.url}', '_blank')">
+        <div class="news-headline">${escHtml(story.title)}</div>
+        ${sum ? `<div class="news-summary">${escHtml(sum.summary)}</div>
+          <div class="news-explainer"><div class="news-explainer-label">📖 Word Explained</div><div class="news-explainer-text">${escHtml(sum.word)}</div></div>
+          <div class="news-why"><div class="news-why-label">💡 Why It Matters for You</div><div class="news-why-text">${escHtml(sum.why)}</div></div>`
+        : `<div class="news-summary text-dim">Tap to read the full article.</div>`}
+        <div class="news-source">${story.author || 'HN'} • ${new Date(story.created_at).toLocaleDateString()}</div>
+      </div>`;
+    }).join('');
+
+    state.newsLoaded = true;
+  } catch(e) {
+    list.innerHTML = `<div class="card"><div class="text-muted text-sm" style="text-align:center;padding:20px;">⚠️ Could not load news. Check internet connection.<br><br><button class="btn btn-blue btn-sm" onclick="loadNews()">Try Again</button></div></div>`;
+  }
+}
+
+async function summarizeStory(story) {
+  const prompt = `Explain this AI news headline in very simple English for someone learning English. Headline: "${story.title}".
+Write exactly:
+SUMMARY: [2-3 simple sentences about what happened. No jargon.]
+WORD: [Pick one hard word from the headline, explain it in 1 simple sentence like: "This word means..."]
+WHY: [1-2 sentences: why does this matter for a call center agent in Pakistan who uses AI tools?]`;
+
+  const messages = [
+    { role:'system', content:'You explain AI news in very simple English. Short, clear sentences. For non-native English speakers.' },
+    { role:'user', content: prompt }
+  ];
+
+  const raw = await callAI(messages, 200);
+  const summary = (raw.match(/SUMMARY:\s*(.+?)(?=WORD:|WHY:|$)/si) || [])[1]?.trim() || '';
+  const word    = (raw.match(/WORD:\s*(.+?)(?=WHY:|$)/si) || [])[1]?.trim() || '';
+  const why     = (raw.match(/WHY:\s*(.+?)$/si) || [])[1]?.trim() || '';
+  return { summary, word, why };
+}
+
+/* ═══════════════════════════════════════════════
+   STATS UI
+═══════════════════════════════════════════════ */
+function updateStatsUI() {
+  const todayData = getDay(today());
+
+  // Today
+  el('today-calls').textContent  = todayData.calls;
+  el('today-patches').textContent = todayData.patches;
+  el('today-mocks').textContent  = todayData.mocks;
+
+  // All-time
+  el('all-mocks').textContent   = store.totalMocks;
+  el('all-patches').textContent = store.allPatches;
+  el('all-calls').textContent   = store.allCalls;
+
+  // Avg score
+  const scores = store.confScores;
+  const avg = scores.length ? (scores.reduce((a,b) => a+b, 0) / scores.length).toFixed(1) : '—';
+  el('avg-score').textContent = avg;
+
+  // Streak
+  el('streak-num').textContent = store.streak;
+
+  // Patch rate
+  const total = store.allCalls + store.totalMocks;
+  const rate = total > 0 ? Math.round((store.allPatches / total) * 100) : 0;
+  el('patch-rate-pct').textContent = `${rate}%`;
+  el('patch-count-label').textContent = `${store.allPatches} patched / ${total} total calls`;
+  const pBar = el('patch-bar');
+  pBar.style.width = `${Math.min(rate,100)}%`;
+  const rateLabel = el('patch-rate-label');
+  if (rate >= 50) {
+    el('patch-rate-pct').style.color = 'var(--green)';
+    pBar.style.background = 'var(--green)';
+    rateLabel.textContent = '🔥 Elite';
+    rateLabel.className = 'status-chip chip-active';
+  } else if (rate >= 30) {
+    el('patch-rate-pct').style.color = 'var(--amber)';
+    pBar.style.background = 'var(--amber)';
+    rateLabel.textContent = '💪 Good';
+    rateLabel.className = 'status-chip chip-offscript';
+  } else {
+    el('patch-rate-pct').style.color = 'var(--red)';
+    pBar.style.background = 'var(--red)';
+    rateLabel.textContent = '⚡ Keep Going';
+    rateLabel.className = 'status-chip chip-done';
+  }
+
+  // Unlock progress
+  const up = el('unlock-progress');
+  const mocks = store.totalMocks;
+  const l2Needed = Math.max(0, 8 - mocks);
+  const l3Needed = Math.max(0, 20 - mocks);
+  up.innerHTML = `
+    <div style="margin-bottom:10px;">
+      <div class="flex justify-between mb-1">
+        <span class="text-sm fw-6">🟡 Level 2 Unlock</span>
+        <span class="text-sm text-muted">${Math.min(mocks,8)}/8 mocks</span>
+      </div>
+      <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:${Math.min((mocks/8)*100,100)}%"></div></div>
+      <div class="text-sm text-dim">${l2Needed > 0 ? `${l2Needed} more mocks to unlock` : '✅ Unlocked!'}</div>
+    </div>
+    <div>
+      <div class="flex justify-between mb-1">
+        <span class="text-sm fw-6">🔴 Level 3 Unlock</span>
+        <span class="text-sm text-muted">${Math.min(mocks,20)}/20 mocks</span>
+      </div>
+      <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:${Math.min((mocks/20)*100,100)}%"></div></div>
+      <div class="text-sm text-dim">${l3Needed > 0 ? `${l3Needed} more mocks to unlock` : '✅ Unlocked!'}</div>
+    </div>`;
+}
+
+/* ═══════════════════════════════════════════════
+   CHECKLIST RENDER
+═══════════════════════════════════════════════ */
+function renderChecklist() {
+  const cont = el('checklist');
+  cont.innerHTML = '';
+  CHECKLIST_ITEMS.forEach((item, i) => {
+    const done = store.checkDone.includes(i);
+    const div = document.createElement('div');
+    div.className = `checklist-item ${done ? 'done' : ''}`;
+    div.innerHTML = `<div class="check-box">${done ? '✓' : ''}</div><div class="check-text">${escHtml(item)}</div>`;
+    div.addEventListener('click', () => {
+      if (store.checkDone.includes(i)) store.checkDone = store.checkDone.filter(x => x !== i);
+      else store.checkDone.push(i);
+      saveStore();
+      renderChecklist();
+      updateCheckCount();
+    });
+    cont.appendChild(div);
+  });
+  updateCheckCount();
+}
+
+function updateCheckCount() {
+  el('check-count').textContent = `${store.checkDone.length}/${CHECKLIST_ITEMS.length}`;
+}
+
+/* ═══════════════════════════════════════════════
+   CLIENT GRID RENDER
+═══════════════════════════════════════════════ */
+function renderClientGrid(level) {
+  const grid = el('client-grid');
+  const mocks = store.totalMocks;
+  grid.innerHTML = '';
+  const levelKeys = Object.keys(CLIENT_TYPES).filter(k => CLIENT_TYPES[k].level === level);
+  const locked = (level === 2 && mocks < 8) || (level === 3 && mocks < 20);
+
+  // Update unlock note
+  const note = el('unlock-note');
+  if (level === 1) note.textContent = '✅ Level 1 unlocked from start';
+  else if (level === 2) note.textContent = locked ? `🔒 Unlocks at 8 mocks (${mocks} done)` : '✅ Level 2 unlocked!';
+  else note.textContent = locked ? `🔒 Unlocks at 20 mocks (${mocks} done)` : '✅ Level 3 unlocked!';
+
+  levelKeys.forEach(key => {
+    const ct = CLIENT_TYPES[key];
+    const isLocked = locked;
+    const isSelected = state.selectedClient === key;
+    const div = document.createElement('div');
+    div.className = `client-card ${isLocked ? 'locked' : ''} ${isSelected ? 'selected' : ''}`;
+    const badgeClass = level === 1 ? 'badge-l1' : level === 2 ? 'badge-l2' : 'badge-l3';
+    div.innerHTML = `<div class="client-badge ${badgeClass}">L${level}</div><div class="client-card-name">${ct.emoji} ${ct.label}</div><div class="client-card-desc">${ct.desc}</div>`;
+    if (!isLocked) {
+      div.addEventListener('click', () => {
+        state.selectedClient = key;
+        renderClientGrid(level);
+        el('start-mock-btn').disabled = false;
+        el('start-mock-btn').textContent = `📞 Start Mock — ${ct.emoji} ${ct.label}`;
+      });
+    }
+    grid.appendChild(div);
+  });
+}
+
+/* ═══════════════════════════════════════════════
+   SETTINGS
+═══════════════════════════════════════════════ */
+function openSettings() {
+  const s = store.settings;
+  el('set-groq').value        = s.groqKey || '';
+  el('set-openrouter').value  = s.openrouterKey || '';
+  el('set-cf-token').value    = s.cfToken || '';
+  el('set-cf-account').value  = s.cfAccount || '';
+  el('set-eleven').value      = s.elevenKey || '';
+  el('set-aria-voice').value  = s.aVoice || '21m00Tcm4TlvDq8ikWAM';
+  el('set-client-voice').value= s.cVoice || 'ODq5zmih8GrVes37Dizd';
+  el('settings-overlay').classList.add('open');
+}
+
+function saveSettings() {
+  store.settings = {
+    groqKey:       el('set-groq').value.trim(),
+    openrouterKey: el('set-openrouter').value.trim(),
+    cfToken:       el('set-cf-token').value.trim(),
+    cfAccount:     el('set-cf-account').value.trim(),
+    elevenKey:     el('set-eleven').value.trim(),
+    aVoice:        el('set-aria-voice').value.trim() || '21m00Tcm4TlvDq8ikWAM',
+    cVoice:        el('set-client-voice').value.trim() || 'ODq5zmih8GrVes37Dizd'
+  };
+  saveStore();
+  detectAPIStatus();
+  toast('✅ Settings saved!', 'success');
+  el('settings-overlay').classList.remove('open');
+}
+
+function detectAPIStatus() {
+  const s = store.settings;
+  if (s.groqKey) setAPIPill('groq');
+  else if (s.openrouterKey) setAPIPill('openrouter');
+  else if (s.cfToken && s.cfAccount) setAPIPill('cloudflare');
+  else setAPIPill('nokey');
+}
+
+/* ═══════════════════════════════════════════════
+   TABS
+═══════════════════════════════════════════════ */
+function switchTab(tab) {
+  state.tab = tab;
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  el(`page-${tab}`).classList.add('active');
+  el(`nav-${tab}`).classList.add('active');
+
+  if (tab === 'news' && !state.newsLoaded) loadNews();
+  if (tab === 'stats') updateStatsUI();
+}
+
+/* ═══════════════════════════════════════════════
+   STREAK CHECK
+═══════════════════════════════════════════════ */
+function checkStreak() {
+  const td = today();
+  if (!store.lastOpen) {
+    store.streak = 1;
+  } else {
+    const last = new Date(store.lastOpen);
+    const now  = new Date(td);
+    const diff = Math.round((now - last) / 86400000);
+    if (diff === 0) { /* same day */ }
+    else if (diff === 1) store.streak++;
+    else store.streak = 1;
+  }
+  store.lastOpen = td;
+  saveStore();
+}
+
+/* ═══════════════════════════════════════════════
+   FORM FILLED INDICATOR
+═══════════════════════════════════════════════ */
+function initFormListeners() {
+  ['f-fname','f-lname','f-zip','f-phone','f-state'].forEach(id => {
+    el(id).addEventListener('input', function() {
+      this.classList.toggle('filled', this.value.trim().length > 0);
+    });
+  });
+  el('f-year').addEventListener('change', function() {
+    this.classList.toggle('filled', this.value.length > 0);
+  });
+
+  el('form-clear-btn').addEventListener('click', () => {
+    ['f-fname','f-lname','f-zip','f-phone','f-state'].forEach(id => {
+      el(id).value = ''; el(id).classList.remove('filled');
+    });
+    el('f-year').value = '';
+    toast('Form cleared', 'info', 2000);
+  });
+
+  el('form-complete-btn').addEventListener('click', () => {
+    const allIds = ['f-fname','f-lname','f-zip','f-phone','f-state'];
+    let filled = 0;
+    allIds.forEach(id => {
+      if (el(id).value.trim()) { el(id).classList.add('filled'); filled++; }
+    });
+    if (el('f-year').value) filled++;
+    toast(`✅ Info marked complete! ${filled}/6 fields collected.`, filled >= 4 ? 'success' : 'warn');
+  });
+}
+
+/* ═══════════════════════════════════════════════
+   COPY TO INPUT (global for inline onclick)
+═══════════════════════════════════════════════ */
+window.copyToInput = function(text) {
+  el('agent-input').value = text;
+  el('agent-input').focus();
+  toast('✅ Copied to input — tap Send when ready!', 'info', 2000);
+};
+
+/* ═══════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════ */
+function init() {
+  loadStore();
+  checkStreak();
+  detectAPIStatus();
+  renderChecklist();
+  renderClientGrid(1);
+  updateStatsUI();
+  initFormListeners();
+
+  // Splash
+  el('splash-start-btn').addEventListener('click', () => {
+    el('splash').classList.add('hidden');
+    if (!store.settings.groqKey && !store.settings.openrouterKey && !store.settings.cfToken) {
+      setTimeout(() => toast('👋 Welcome, Mark! Add an API key in ⚙️ Settings for AI coaching.', 'info', 5000), 600);
+    }
+  });
+
+  // Settings
+  el('settings-btn').addEventListener('click', openSettings);
+  el('settings-save-btn').addEventListener('click', saveSettings);
+  el('settings-close-btn').addEventListener('click', () => el('settings-overlay').classList.remove('open'));
+  el('settings-overlay').addEventListener('click', (e) => {
+    if (e.target === el('settings-overlay')) el('settings-overlay').classList.remove('open');
+  });
+
+  // Nav tabs
+  document.querySelectorAll('.nav-tab').forEach(tab => {
+    tab.addEventListener('click', () => switchTab(tab.dataset.page));
+  });
+
+  // Level tabs
+  document.querySelectorAll('.level-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      const level = parseInt(tab.dataset.level);
+      document.querySelectorAll('.level-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      state.selectedLevel = level;
+      state.selectedClient = null;
+      el('start-mock-btn').disabled = true;
+      el('start-mock-btn').textContent = '📞 Start Mock Call';
+      renderClientGrid(level);
+    });
+  });
+
+  // Start call
+  el('start-mock-btn').addEventListener('click', startCall);
+
+  // End call
+  el('end-call-btn').addEventListener('click', () => endCall(false));
+
+  // New call
+  el('new-call-btn').addEventListener('click', () => {
+    el('report-section').classList.add('hidden');
+    el('precall-view').classList.remove('hidden');
+  });
+
+  // Input/send
+  el('send-btn').addEventListener('click', () => {
+    const text = el('agent-input').value.trim();
+    if (text) agentTurn(text);
+  });
+  el('agent-input').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      const text = el('agent-input').value.trim();
+      if (text) agentTurn(text);
+    }
+  });
+
+  // Mic
+  el('mic-btn').addEventListener('click', startListening);
+
+  // Clear feed
+  el('clear-feed-btn').addEventListener('click', () => { el('call-feed').innerHTML = ''; });
+
+  // News refresh
+  el('news-refresh-btn').addEventListener('click', () => { state.newsLoaded = false; loadNews(); });
+
+  // Stats buttons
+  el('log-call-btn').addEventListener('click', () => {
+    store.allCalls++; getDay(today()).calls++; saveStore(); updateStatsUI();
+    toast('📞 Real call logged!', 'success', 2000);
+  });
+  el('log-patch-btn').addEventListener('click', () => {
+    store.allPatches++; getDay(today()).patches++; saveStore(); updateStatsUI();
+    toast('🎉 Patch logged!', 'success', 2000);
+  });
+  el('reset-today-btn').addEventListener('click', () => {
+    if (confirm('Reset today\'s stats?')) {
+      store.byDay[today()] = {calls:0, patches:0, mocks:0};
+      saveStore(); updateStatsUI();
+      toast('Today reset.', 'info', 2000);
+    }
+  });
+
+  // PWA Service Worker
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  }
+
+  // Voices preload
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.getVoices();
+    window.speechSynthesis.addEventListener('voiceschanged', () => window.speechSynthesis.getVoices());
+  }
+}
+
+// Run
+init();
+
+})();
+</script>
+</body>
+</html>
